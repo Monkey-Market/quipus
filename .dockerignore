@@ -1,0 +1,18 @@
+# Ignorar archivos y directorios generados por el entorno de desarrollo
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Ignorar archivos y directorios generados por herramientas de construcción
+build/
+dist/
+*.egg-info/
+
+# Ignorar archivos y directorios específicos del proyecto
+.venv/
+.env
+
+# Ignorar archivos y directorios de pruebas
+.coverage
+htmlcov/
