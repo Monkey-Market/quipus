@@ -1,0 +1,4 @@
+-r requirements.txt
+
+pylint==3.2
+black==24.8
