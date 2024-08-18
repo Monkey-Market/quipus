@@ -14,7 +14,7 @@ class TestTemplate(unittest.TestCase):
         self.css_test_path = os.path.join(self.test_dir.name, ".css")
         self.assets_test_dir = os.path.join(self.test_dir.name, "assets")
 
-        self.html_test_content = "<html><body>Test HTML</body></html>"
+        self.html_test_content = "<html><body>Test HTML {placeholder}</body></html>"
         self.css_test_content = "body { background-color: #fff; }"
 
         with open(self.html_test_path, "w") as f:
@@ -103,6 +103,21 @@ class TestTemplate(unittest.TestCase):
         template = Template(self.html_test_path)
         content = template.render_html()
         self.assertEqual(content, self.html_test_content)
+
+    def test_render_html_with_values(self):
+        """Test rendering HTML content with values."""
+        template = Template(self.html_test_path)
+        values: dict[str, str] = {"placeholder": "test"}
+        self.assertEqual(
+            self.html_test_content.format(**values),
+            template.render_html_with_values(values=values),
+        )
+
+        with self.assertRaises(TypeError) as context:
+            template.render_html_with_values(values=120)
+
+        with self.assertRaises(TypeError):
+            template.render_html_with_values(values={120: "test"})
 
     def test_render_css(self):
         """Test rendering CSS content."""

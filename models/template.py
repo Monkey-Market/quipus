@@ -1,5 +1,6 @@
 import os
-from typing import Optional, Self
+from typing import Any, Optional, Self
+from string import Template as StringTemplate
 
 
 class Template:
@@ -192,6 +193,37 @@ class Template:
         """
         with open(self.html_path) as html:
             return html.read()
+
+    def render_html_with_values(self, values: dict[str, Any]):
+        """
+        Renders an HTML template with the provided dictionary of string key-value pairs.
+
+        This method substitutes placeholders in the HTML template with corresponding
+        values from the provided dictionary. Placeholders in the template should follow
+        the format `{placeholder_name}`.
+
+        Args:
+            values (dict[str, Any]): A dictionary where each key is a string.
+                The keys correspond to the placeholder names in the HTML template, and
+                the values are the content that will replace these placeholders.
+
+        Returns:
+            str: The rendered HTML string with all placeholders substituted.
+
+        Raises:
+            TypeError: If 'values' is not a dictionary or not all keys are strings.
+            KeyError: If not all placeholders in the HTML template could be substituted.
+        """
+        if not isinstance(values, dict):
+            raise TypeError(
+                "'values' must be a dictionary.",
+                f"Current type: {type(values)}",
+            )
+
+        if not all(isinstance(k, str) for k in values.keys()):
+            raise TypeError("All keys in the dictionary must be a string.")
+
+        return self.render_html().format(**values)
 
     def render_css(self) -> str:
         """
