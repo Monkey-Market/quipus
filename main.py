@@ -1,35 +1,31 @@
+import csv
 import os
-import pandas as pd
+from typing import Any
 from weasyprint import HTML
 
-from models.certificate import Certificate
-from models.certificate_factory import CertificateFactory
 from models.template import Template
 
 
-def to_pdf(certificate: Certificate, template: Template, output_path: str) -> None:
-    raw_html: str = template.render_html().format(
-        completion_date=certificate.completion_date,
-        content=certificate.content,
-        entity=certificate.entity,
-        name=certificate.name,
-        duration=certificate.duration,
-        validity_checker=certificate.validity_checker,
-    )
-    html: HTML = HTML(string=raw_html)
+def csv_to_dict(path_to_csv: str):
+    with open(path_to_csv, "r") as file:
+        csv_reader = csv.DictReader(file)
+        data = [row for row in csv_reader]
+    return data
+
+
+def to_pdf(values: dict[str, Any], template: Template, output_path: str) -> None:
+    html: HTML = HTML(string=template.render_html_with_values(values=values))
     html.write_pdf(target=f"{output_path}.pdf")
 
 
 def main():
-    data: pd.DataFrame = pd.read_csv("data/certificates.csv")
-    certificates: list[Certificate] = CertificateFactory.create_certificates(data)
     template: Template = Template("templates/template.html")
     output_path: str = "output"
 
     os.makedirs(output_path, exist_ok=True)
 
-    for certificate in certificates:
-        to_pdf(certificate, template, os.path.join(output_path, certificate.name))
+    for item in csv_to_dict("data/certificates.csv"):
+        to_pdf(values=item, template=template, output_path=f"{output_path}/{item["name"]}")
 
 
 if __name__ == "__main__":
