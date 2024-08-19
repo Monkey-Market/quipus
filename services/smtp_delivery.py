@@ -305,6 +305,7 @@ class EmailMessageBuilder:
     Attributes:
         from_address (str): Email sender address.
         to_addresses (list[str]): Email recipient addresses.
+        cc_addresses (list[str]): Email CC addresses.
         subject (str): Email subject.
         body (str): Email body.
         body_type (Literal["html", "plain"]): Email body type.
@@ -324,11 +325,12 @@ class EmailMessageBuilder:
         """
         self.from_address = from_address
         self.to_addresses = to_addresses
+        self.cc_addresses = []
         self.subject = ""
         self.body = ""
         self.body_type = "plain"
         self.attachments = []
-        self.custom_headers = None
+        self.custom_headers = {}
 
     @property
     def from_address(self) -> str:
@@ -406,6 +408,46 @@ class EmailMessageBuilder:
             raise ValueError("'to_addresses' cannot contain empty strings.")
 
         self.__to_addresses = to_addresses
+
+    @property
+    def cc_addresses(self) -> list[str]:
+        """
+        Get the email CC addresses.
+
+        Returns:
+            list[str]: Email CC addresses.
+        """
+        return self.__cc_addresses
+
+    @cc_addresses.setter
+    def cc_addresses(self, cc_addresses: list[str]) -> None:
+        """
+        Set the email CC addresses.
+
+        Args:
+            cc_addresses (list[str]): Email CC addresses.
+
+        Raises:
+            TypeError: If 'cc_addresses' is not a list.
+            TypeError: If 'cc_addresses' contains non-string values.
+            ValueError: If 'cc_addresses' contains empty strings.
+        """
+        if not isinstance(cc_addresses, list):
+            raise TypeError(
+                "'cc_addresses' must be a list.",
+                f"Current type: {type(cc_addresses)}.",
+            )
+
+        if not all(isinstance(addr, str) for addr in cc_addresses):
+            raise TypeError(
+                "'cc_addresses' must contain only strings.",
+                f"Invalid values: {cc_addresses}.",
+            )
+
+        if not all(addr.strip() for addr in cc_addresses):
+            raise ValueError("'cc_addresses' cannot contain empty strings.")
+
+        self.__cc_addresses = cc_addresses
 
     @property
     def subject(self) -> str:
@@ -571,6 +613,11 @@ class EmailMessageBuilder:
                 f"Invalid values: {custom_headers}.",
             )
 
+        if not all(
+            header.strip() and value.strip() for header, value in custom_headers.items()
+        ):
+            raise ValueError("'custom_headers' cannot contain empty strings.")
+
         self.__custom_headers = custom_headers
 
     def add_recipient(self, to_address: str) -> Self:
@@ -590,6 +637,26 @@ class EmailMessageBuilder:
             raise ValueError("'to_address' cannot be an empty string.")
 
         self.to_addresses.append(to_address)
+
+        return self
+
+    def add_cc(self, cc_address: str) -> Self:
+        """
+        Add a recipient to the email message.
+
+        Args:
+            cc_address (str): Email recipient address.
+        """
+        if not isinstance(cc_address, str):
+            raise TypeError(
+                "'cc_address' must be a string.",
+                f"Current type: {type(cc_address)}.",
+            )
+
+        if not cc_address.strip():
+            raise ValueError("'cc_address' cannot be an empty string.")
+
+        self.cc_addresses.append(cc_address)
 
         return self
 
@@ -755,7 +822,8 @@ class EmailMessageBuilder:
         if not value.strip():
             raise ValueError("'value' cannot be an empty string.")
 
-        self.custom_headers[header] = value
+        if self.custom_headers is not None:
+            self.custom_headers[header] = value
         return self
 
     def __pre_build_validation(self) -> None:
@@ -772,7 +840,9 @@ class EmailMessageBuilder:
                 f"Current values: {self.from_address}, {self.to_addresses}.",
             )
 
-        if self.custom_headers is not None and not self.custom_headers.values():
+        if (self.custom_headers is not None and self.custom_headers != {}) and not any(
+            self.custom_headers.values()
+        ):
             raise ValueError(
                 "Custom headers must have values.",
                 f"Current values: {self.custom_headers}.",
@@ -793,6 +863,7 @@ class EmailMessageBuilder:
         email_message = MIMEMultipart()
         email_message["From"] = self.from_address
         email_message["To"] = ", ".join(self.to_addresses)
+        email_message["Cc"] = ", ".join(self.cc_addresses)
         email_message["Subject"] = self.subject
 
         for header, value in self.custom_headers.items() if self.custom_headers else []:
@@ -821,6 +892,7 @@ class EmailMessageBuilder:
             {
                 "from_address": self.from_address,
                 "to_addresses": self.to_addresses,
+                "cc_addresses": self.cc_addresses,
                 "subject": self.subject,
                 "body": self.body,
                 "body_type": self.body_type,
