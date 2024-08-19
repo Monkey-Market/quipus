@@ -1,9 +1,10 @@
 import unittest
+from unittest.mock import patch
 from email.mime.multipart import MIMEMultipart
 from email.mime.base import MIMEBase
 import os
 
-from services.smtp_delivery import SMTPConfig, EmailMessageBuilder
+from services.smtp_delivery import SMTPConfig, EmailMessageBuilder, EmailSender
 
 
 class TestEmailMessageBuilder(unittest.TestCase):
@@ -222,8 +223,6 @@ class TestSMTPConfig(unittest.TestCase):
         self.assertEqual(self.config.password, "pass")
         self.assertIsInstance(self.config.use_ssl, bool)
         self.assertIsInstance(self.config.use_tls, bool)
-        # self.assertBoolean(self.config.use_tls)
-        # self.assertBoolean(self.config.use_ssl)
         self.assertEqual(self.config.timeout, 30)
 
     def test_server_setter(self):
@@ -308,6 +307,103 @@ class TestSMTPConfig(unittest.TestCase):
             }
         )
         self.assertEqual(str(self.config), expected_str)
+
+
+class TestEmailSender(unittest.TestCase):
+
+    def setUp(self):
+        """Setup an SMTPConfig and EmailSender instance for testing."""
+        self.smtp_config = SMTPConfig(
+            server="smtp.example.com",
+            port=587,
+            username="user",
+            password="pass",
+            use_tls=False,
+            use_ssl=False,
+            timeout=30,
+        )
+        self.email_sender = EmailSender(self.smtp_config)
+        self.email_message = (
+            EmailMessageBuilder("test@example.com", ["recipient@example.com"])
+            .with_subject("Test Subject")
+            .with_body("Test Body", "plain")
+            .build()
+        )
+
+    def test_initialization(self):
+        """Test initialization of the EmailSender class."""
+        self.assertEqual(self.email_sender.smtp_config, self.smtp_config)
+
+    @patch("services.smtp_delivery.smtplib.SMTP")
+    @patch("services.smtp_delivery.smtplib.SMTP_SSL")
+    def test_send_email_with_ssl(self, mock_smtp_ssl, mock_smtp):
+        """Test sending an email with SSL enabled."""
+        self.smtp_config.use_ssl = True
+        self.email_sender.send(self.email_message)
+        mock_smtp_ssl.assert_called_once_with(
+            self.smtp_config.server,
+            self.smtp_config.port,
+            timeout=self.smtp_config.timeout,
+        )
+        mock_smtp_ssl.return_value.login.assert_called_once_with(
+            self.smtp_config.username,
+            self.smtp_config.password,
+        )
+        mock_smtp_ssl.return_value.sendmail.assert_called_once_with(
+            self.email_message["From"],
+            self.email_message["To"].split(", "),
+            self.email_message.as_string(),
+        )
+        mock_smtp_ssl.return_value.quit.assert_called_once()
+
+    @patch("services.smtp_delivery.smtplib.SMTP")
+    @patch("services.smtp_delivery.smtplib.SMTP_SSL")
+    def test_send_email_with_tls(self, mock_smtp_ssl, mock_smtp):
+        """Test sending an email with TLS enabled."""
+        self.smtp_config.use_tls = True
+        self.email_sender.send(self.email_message)
+        mock_smtp.assert_called_once_with(
+            self.smtp_config.server,
+            self.smtp_config.port,
+            timeout=self.smtp_config.timeout,
+        )
+        mock_smtp.return_value.starttls.assert_called_once()
+        mock_smtp.return_value.login.assert_called_once_with(
+            self.smtp_config.username,
+            self.smtp_config.password,
+        )
+        mock_smtp.return_value.sendmail.assert_called_once_with(
+            self.email_message["From"],
+            self.email_message["To"].split(", "),
+            self.email_message.as_string(),
+        )
+        mock_smtp.return_value.quit.assert_called_once()
+
+    @patch("services.smtp_delivery.smtplib.SMTP")
+    @patch("services.smtp_delivery.smtplib.SMTP_SSL")
+    def test_send_email_without_ssl_tls(self, mock_smtp_ssl, mock_smtp):
+        """Test sending an email without SSL/TLS."""
+        self.email_sender.send(self.email_message)
+        mock_smtp.assert_called_once_with(
+            self.smtp_config.server,
+            self.smtp_config.port,
+            timeout=self.smtp_config.timeout,
+        )
+        mock_smtp.return_value.login.assert_called_once_with(
+            self.smtp_config.username,
+            self.smtp_config.password,
+        )
+        mock_smtp.return_value.sendmail.assert_called_once_with(
+            self.email_message["From"],
+            self.email_message["To"].split(", "),
+            self.email_message.as_string(),
+        )
+        mock_smtp.return_value.quit.assert_called_once()
+
+    def test_str_method(self):
+        """Test the __str__ method of the EmailSender class."""
+        expected_str = str({"smtp_config": str(self.smtp_config)})
+        self.assertEqual(str(self.email_sender), expected_str)
 
 
 if __name__ == "__main__":
