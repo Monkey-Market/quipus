@@ -3,7 +3,7 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.base import MIMEBase
 import os
 
-from services.smtp_delivery import EmailMessageBuilder
+from services.smtp_delivery import SMTPConfig, EmailMessageBuilder
 
 
 class TestEmailMessageBuilder(unittest.TestCase):
@@ -198,6 +198,116 @@ class TestEmailMessageBuilder(unittest.TestCase):
             }
         )
         self.assertEqual(str(self.builder), expected_str)
+
+
+class TestSMTPConfig(unittest.TestCase):
+
+    def setUp(self):
+        """Setup an SMTPConfig instance for testing."""
+        self.config = SMTPConfig(
+            server="smtp.example.com",
+            port=587,
+            username="user",
+            password="pass",
+            use_tls=False,
+            use_ssl=False,
+            timeout=30,
+        )
+
+    def test_initialization(self):
+        """Test initialization of the SMTPConfig class."""
+        self.assertEqual(self.config.server, "smtp.example.com")
+        self.assertEqual(self.config.port, 587)
+        self.assertEqual(self.config.username, "user")
+        self.assertEqual(self.config.password, "pass")
+        self.assertIsInstance(self.config.use_ssl, bool)
+        self.assertIsInstance(self.config.use_tls, bool)
+        # self.assertBoolean(self.config.use_tls)
+        # self.assertBoolean(self.config.use_ssl)
+        self.assertEqual(self.config.timeout, 30)
+
+    def test_server_setter(self):
+        """Test setting a valid server address."""
+        with self.assertRaises(TypeError):
+            self.config.server = 123
+
+        with self.assertRaises(ValueError):
+            self.config.server = ""
+
+        self.config.server = "new.smtp.example.com"
+        self.assertEqual(self.config.server, "new.smtp.example.com")
+
+    def test_port_setter(self):
+        """Test setting a valid port."""
+        with self.assertRaises(TypeError):
+            self.config.port = "not_an_int"
+
+        with self.assertRaises(ValueError):
+            self.config.port = 70000
+
+        self.config.port = 465
+        self.assertEqual(self.config.port, 465)
+
+    def test_username_setter(self):
+        """Test setting a valid username."""
+        with self.assertRaises(TypeError):
+            self.config.username = 123
+
+        with self.assertRaises(ValueError):
+            self.config.username = ""
+
+        self.config.username = "new_user"
+        self.assertEqual(self.config.username, "new_user")
+
+    def test_password_setter(self):
+        """Test setting a valid password."""
+        with self.assertRaises(TypeError):
+            self.config.password = 123
+
+        self.config.password = "new_pass"
+        self.assertEqual(self.config.password, "new_pass")
+
+    def test_use_tls_setter(self):
+        """Test setting a valid use_tls value."""
+        with self.assertRaises(TypeError):
+            self.config.use_tls = "not_a_bool"
+
+        self.config.use_tls = False
+        self.assertFalse(self.config.use_tls)
+
+    def test_use_ssl_setter(self):
+        """Test setting a valid use_ssl value."""
+        with self.assertRaises(TypeError):
+            self.config.use_ssl = "not_a_bool"
+
+        self.config.use_ssl = True
+        self.assertTrue(self.config.use_ssl)
+
+    def test_timeout_setter(self):
+        """Test setting a valid timeout value."""
+        with self.assertRaises(TypeError):
+            self.config.timeout = "not_an_int"
+
+        with self.assertRaises(ValueError):
+            self.config.timeout = -1
+
+        self.config.timeout = 60
+        self.assertEqual(self.config.timeout, 60)
+
+    def test_str_method(self):
+        """Test the __str__ method of the SMTPConfig class."""
+        expected_str = str(
+            {
+                "server": "smtp.example.com",
+                "port": 587,
+                "username": "user",
+                "password": "pass",
+                "use_tls": False,
+                "use_ssl": False,
+                "timeout": 30,
+            }
+        )
+        self.assertEqual(str(self.config), expected_str)
 
 
 if __name__ == "__main__":
