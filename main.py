@@ -9,7 +9,7 @@ from models.template import Template
 def csv_to_dict(path_to_csv: str):
     with open(path_to_csv, "r") as file:
         csv_reader = csv.DictReader(file)
-        data = [row for row in csv_reader]
+        data = list(csv_reader)
     return data
 
 
@@ -25,7 +25,9 @@ def main():
     os.makedirs(output_path, exist_ok=True)
 
     for item in csv_to_dict("data/certificates.csv"):
-        to_pdf(values=item, template=template, output_path=f"{output_path}/{item["name"]}")
+        to_pdf(
+            values=item, template=template, output_path=f"{output_path}/{item["name"]}"
+        )
 
 
 if __name__ == "__main__":
