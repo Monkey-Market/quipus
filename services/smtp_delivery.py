@@ -690,6 +690,50 @@ class EmailMessageBuilder:
         self.body_type = body_type
         return self
 
+    def with_body_path(
+        self,
+        body_path: str,
+        body_type: Literal["plain", "html"] = "plain",
+        replacements: dict = None,
+    ) -> Self:
+        """
+        Set the email body from a file path and replace placeholders.
+
+        Args:
+            body_path (str): Email body path.
+            body_type (Literal["plain", "html"]): Email body type.
+            replacements (dict): Dictionary of replacements for placeholders.
+
+        Returns:
+            Self: EmailMessageBuilder instance.
+
+        Raises:
+            TypeError: If 'body_path' is not a string.
+            ValueError: If 'body_path' is an empty string.
+            FileNotFoundError: If the body path does not exist.
+        """
+        if not isinstance(body_path, str):
+            raise TypeError(
+                "'body_path' must be a string.",
+                f"Current type: {type(body_path)}.",
+            )
+
+        if not body_path.strip():
+            raise ValueError("'body_path' cannot be an empty string.")
+
+        if not os.path.exists(body_path):
+            raise FileNotFoundError(f"Body path '{body_path}' does not exist.")
+
+        with open(body_path, "r") as body_file:
+            self.body = body_file.read()
+
+        if replacements:
+            for key, value in replacements.items():
+                self.body = self.body.replace(f"{{{key}}}", value)
+
+        self.body_type = body_type
+        return self
+
     def __convert_attachment_path_to_mime_application(
         self, attachment_path: str
     ) -> MIMEApplication:
