@@ -1,5 +1,7 @@
+import os
 from models.template import Template
-from src.services.template_manager import TemplateManager
+from services.template_manager import TemplateManager
+from services.s3_delivery import AWSConfig, S3Delivery
 
 
 def main():
@@ -19,3 +21,16 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+    mytuple = []
+    for file in os.walk("output/"):
+        for f in file[2]:
+            mytuple.append((f"output/{f}", f))
+
+    print("Uploading files to S3...")
+
+    S3Delivery(AWSConfig.from_profile()).upload_many_files(
+        files=mytuple,
+        bucket_name="airbyte-storage-s3",
+    )
+
