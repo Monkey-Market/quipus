@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "hermes"
+version = "0.1.0"
+description = ""
+authors = ["Jorge U. Alarcón <j1dev@proton.me>", "Fernando Nicolas Carrillo Lopez <pandasoncode@gmail.com>"]
+readme = "README.md"
+package-mode = false
+license = "MIT"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+weasyprint = "62.3"
+paramiko = "3.4.1,<3.5.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
