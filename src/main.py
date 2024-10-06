@@ -1,34 +1,21 @@
-import csv
-import os
-from typing import Any
-from weasyprint import HTML
-
 from models.template import Template
-
-
-def csv_to_dict(path_to_csv: str):
-    with open(path_to_csv, "r") as file:
-        csv_reader = csv.DictReader(file)
-        data = list(csv_reader)
-    return data
-
-
-def to_pdf(values: dict[str, Any], template: Template, output_path: str) -> None:
-    html: HTML = HTML(string=template.render_html_with_values(values=values))
-    html.write_pdf(target=f"{output_path}.pdf")
+from services.template_manager import TemplateManager
 
 
 def main():
-    template: Template = Template("templates/template.html")
-    output_path: str = "output"
-
-    os.makedirs(output_path, exist_ok=True)
-
-    for item in csv_to_dict("data/certificates.csv"):
-        to_pdf(
-            values=item, template=template, output_path=f"{output_path}/{item["name"]}"
+    (
+        TemplateManager()
+        .from_source("csv", path_to_file="data/certificates.csv")
+        .with_multiple_templates(
+            [
+                Template(html_path="templates/template_es.html"),
+                Template(html_path="templates/template_en.html"),
+            ]
         )
-
+        .decide_template_with(lambda item: f"templates/template_{item["lang"]}.html")
+        .decide_filename_with(lambda item: f"{item["name"]}_{item["content"]}")
+        .to_pdf("output", create_dir=True)
+    )
 
 if __name__ == "__main__":
     main()
