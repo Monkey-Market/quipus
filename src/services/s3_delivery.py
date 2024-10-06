@@ -23,9 +23,9 @@ class AWSConfig:
             aws_secret_access_key (str): AWS secret access key.
             region (str): AWS region.
         """
-        self.AWS_ACCESS_KEY_ID = aws_access_key
-        self.AWS_SECRET_ACCESS_KEY = aws_secret_access_key
-        self.AWS_REGION = region
+        self._AWS_ACCESS_KEY_ID = aws_access_key
+        self._AWS_SECRET_ACCESS_KEY = aws_secret_access_key
+        self._AWS_REGION = region
 
         @property
         def AWS_ACCESS_KEY_ID(self) -> str:

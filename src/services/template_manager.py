@@ -1,14 +1,11 @@
-import csv
 import os
 from typing import Any, Callable, Literal, Self
-
 from weasyprint import HTML
-
 from models.template import Template
+from data_sources.csv_data_source import CSVDataSource
 
 
 class TemplateManager:
-
     __SUPPORTED_SOURCE_TYPES: list[str] = ["csv"]
 
     def __init__(self) -> None:
@@ -95,21 +92,8 @@ class TemplateManager:
         return self
 
     def from_csv(self, path_to_file: str) -> Self:
-        if not isinstance(path_to_file, str):
-            raise TypeError(
-                "'path_to_csv' must be a string",
-                f"Current type: {type(path_to_file)}",
-            )
-
-        if not path_to_file.strip():
-            raise ValueError("'path_to_csv' cannot be an empty string.")
-
-        if not os.path.isfile(path_to_file):
-            raise FileNotFoundError(f"'{path_to_file}' file does not exist.")
-
-        with open(path_to_file, "r") as file:
-            csv_reader = csv.DictReader(file)
-            self.data = list(csv_reader)
+        csv_data_source = CSVDataSource(file_path=path_to_file)
+        self.data = csv_data_source.fetch_data().to_dict(orient="records")
 
         return self
 
