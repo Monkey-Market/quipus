@@ -1,5 +1,5 @@
 from models.template import Template
-from services.template_manager import TemplateManager
+from src.services.template_manager import TemplateManager
 
 
 def main():
