@@ -1,17 +1,16 @@
-# Usa una imagen base de Python
-FROM python:3.12.2-alpine3.19
+FROM python:3.12.2
+RUN pip install --no-cache-dir poetry && \
+    poetry config virtualenvs.create false
 
-# Establece el directorio de trabajo dentro del contenedor
+COPY pyproject.toml poetry.lock ./
+
+RUN poetry install
+
 WORKDIR /app
 
-# Copia los archivos de requerimientos al directorio de trabajo
-COPY requirements.txt .
+RUN adduser -u 5678 --disabled-password --gecos "" appuser
+USER appuser
 
-# Instala las dependencias del proyecto
-RUN pip install --no-cache-dir -r requirements.txt
+COPY --chown=appuser src/. .
 
-# Copia el código fuente al directorio de trabajo
-COPY . .
-
-# Define el comando por defecto para ejecutar la aplicación
 CMD ["python", "main.py"]
