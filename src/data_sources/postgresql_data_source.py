@@ -24,7 +24,7 @@ class PostgreSQLDataSource:
         password: str,
         port: int = 5432,
         pool_size: int = 5,
-        timeout: Optional[int] = 15,
+        timeout: int = 15,
     ):
         self.__host = host
         self.__database = database
@@ -44,14 +44,11 @@ class PostgreSQLDataSource:
         Returns:
             ConnectionPool: Initialized connection pool.
         """
-        try:
-            return ConnectionPool(
-                f"dbname={self.database} user={self.user} password={self.password} host={self.host} port={self.port}",
-                min_size=1,
-                max_size=pool_size,
-            )
-        except Exception as e:
-            raise RuntimeError(f"Failed to initialize connection pool: {e}")
+        return ConnectionPool(
+            f"dbname={self.database} user={self.user} password={self.password} host={self.host} port={self.port}",
+            min_size=1,
+            max_size=pool_size,
+        )
 
     @property
     def host(self) -> str:
@@ -114,13 +111,17 @@ class PostgreSQLDataSource:
         self.__database = database
 
     @property
-    def timeout(self) -> Optional[int]:
+    def timeout(self) -> int:
         return self.__timeout
 
     @timeout.setter
-    def timeout(self, timeout: Optional[int]) -> None:
-        if timeout is not None and not isinstance(timeout, int):
-            raise TypeError("'timeout' must be an integer or None.")
+    def timeout(self, timeout: int) -> None:
+        if not isinstance(timeout, int):
+            raise TypeError("'timeout' must be an integer.")
+
+        if timeout < 0 or timeout > 3600:
+            raise ValueError("'timeout' must be between 0 and 3600 seconds.")
+
         self.__timeout = timeout
 
     def close_pool(self) -> None:
@@ -149,15 +150,12 @@ class PostgreSQLDataSource:
         if not query:
             raise ValueError("Query must be provided to fetch data.")
 
-        try:
-            with self.__connection_pool.connection() as conn:
-                with conn.cursor() as cursor:
-                    cursor.execute(query)
-                    data = cursor.fetchall()
-                    columns = [desc.name for desc in cursor.description]
-                    return data, columns
-        except Exception as e:
-            raise RuntimeError(f"Failed to fetch data: {e}")
+        with self.__connection_pool.connection() as conn:
+            with conn.cursor() as cursor:
+                cursor.execute(query)
+                data = cursor.fetchall()
+                columns = [desc.name for desc in cursor.description]
+                return data, columns
 
     def execute_query(self, query: str) -> Optional[tuple[List[Any], List[str]]]:
         """
@@ -175,21 +173,18 @@ class PostgreSQLDataSource:
         Raises:
             RuntimeError: If an error occurs during query execution.
         """
-        try:
-            with self.__connection_pool.connection() as conn:
-                with conn.cursor() as cursor:
-                    cursor.execute(query)
-                    if (
-                        cursor.description
-                    ):  # Only if the query returns results (e.g., SELECT)
-                        data = cursor.fetchall()
-                        columns = [desc.name for desc in cursor.description]
-                        return data, columns
-                    else:
-                        conn.commit()  # For queries like INSERT, UPDATE, DELETE
-                        return None
-        except Exception as e:
-            raise RuntimeError(f"Failed to execute query: {e}")
+        with self.__connection_pool.connection() as conn:
+            with conn.cursor() as cursor:
+                cursor.execute(query)
+                if (
+                    cursor.description
+                ):  # Only if the query returns results (e.g., SELECT)
+                    data = cursor.fetchall()
+                    columns = [desc.name for desc in cursor.description]
+                    return data, columns
+                else:
+                    conn.commit()  # For queries like INSERT, UPDATE, DELETE
+                    return None
 
     def __str__(self) -> str:
         return f"PostgreSQLDataSource(host={self.host}, port={self.port}, database={self.database}, user={self.user})"
