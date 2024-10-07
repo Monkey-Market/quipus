@@ -7,9 +7,9 @@ class AWSConfig:
     AWS configuration class.
 
     Attributes:
-        _AWS_ACCESS_KEY_ID (str): AWS access key.
-        _AWS_SECRET_ACCESS_KEY (str): AWS secret access key.
-        _AWS_REGION (str): AWS region.
+        AWS_ACCESS_KEY_ID (str): AWS access key.
+        AWS_SECRET_ACCESS_KEY (str): AWS secret access key.
+        AWS_REGION (str): AWS region.
     """
 
     def __init__(
@@ -200,9 +200,9 @@ class S3Delivery:
 
         s3 = boto3.client(
             "s3",
-            aws_access_key_id=self._aws_config._AWS_ACCESS_KEY_ID,
-            aws_secret_access_key=self._aws_config._AWS_SECRET_ACCESS_KEY,
-            region_name=self._aws_config._AWS_REGION,
+            aws_access_key_id=self._aws_config.AWS_ACCESS_KEY_ID,
+            aws_secret_access_key=self._aws_config.AWS_SECRET_ACCESS_KEY,
+            region_name=self._aws_config.AWS_REGION,
         )
         for file_path, key in files:
             s3.upload_file(file_path, bucket_name, key)
