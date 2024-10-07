@@ -14,22 +14,19 @@ class CSVDataSource:
     """
 
     def __init__(self, file_path: str, delimiter: str = ",", encoding: str = "utf-8"):
-        self.__file_path = file_path
-        self.__delimiter = delimiter
-        self.__encoding = encoding
-        self.__dataframe: Optional[pd.DataFrame] = None
+        self.file_path = file_path
+        self.delimiter = delimiter
+        self.encoding = encoding
+        self.dataframe: Optional[pd.DataFrame] = None
         self.__load_data()
 
     def __load_data(self) -> None:
         """
         Load data from the CSV file into a pandas DataFrame.
         """
-        try:
-            self.__dataframe = pd.read_csv(
-                self.file_path, delimiter=self.delimiter, encoding=self.encoding
-            )
-        except Exception as e:
-            raise RuntimeError(f"Failed to load CSV data: {e}")
+        self.dataframe = pd.read_csv(
+            self.file_path, delimiter=self.delimiter, encoding=self.encoding
+        )
 
     @property
     def file_path(self) -> str:
@@ -73,9 +70,9 @@ class CSVDataSource:
         Returns:
             pd.DataFrame: Data loaded from the CSV file.
         """
-        if self.__dataframe is None:
+        if self.dataframe is None:
             raise RuntimeError("No data loaded from the CSV file.")
-        return self.__dataframe
+        return self.dataframe
 
     def get_columns(self) -> List[str]:
         """
@@ -84,9 +81,9 @@ class CSVDataSource:
         Returns:
             List[str]: Column names.
         """
-        if self.__dataframe is None:
+        if self.dataframe is None:
             raise RuntimeError("No data loaded from the CSV file.")
-        return list(self.__dataframe.columns)
+        return list(self.dataframe.columns)
 
     def filter_data(self, query: str) -> pd.DataFrame:
         """
@@ -102,12 +99,10 @@ class CSVDataSource:
             RuntimeError: If no data is loaded.
             ValueError: If the query is invalid.
         """
-        if self.__dataframe is None:
+        if self.dataframe is None:
             raise RuntimeError("No data loaded from the CSV file.")
-        try:
-            return self.__dataframe.query(query)
-        except Exception as e:
-            raise ValueError(f"Failed to filter data: {e}")
+
+        return self.dataframe.query(query)
 
     def __str__(self) -> str:
         return f"CSVDataSource(file_path={self.file_path}, delimiter={self.delimiter}, encoding={self.encoding})"
