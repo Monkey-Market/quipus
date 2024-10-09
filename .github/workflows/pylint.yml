@@ -30,6 +30,9 @@ jobs:
           pylint_score=$(pylint src/ | grep 'Your code has been rated at' | awk '{print $7}' | cut -d '/' -f 1)
           if (( $(echo "$pylint_score < 9.5" | bc -l) )); then
             echo "Pylint score is too low: $pylint_score. Minimum required: 9.5"
+
+            cat .github/not_enough_pylint_score.md
+
             gh pr comment \
               ${{ github.event.pull_request.number }} \
               --body "$(cat .github/not_enough_pylint_score.md)"
