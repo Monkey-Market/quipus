@@ -32,8 +32,8 @@ jobs:
             echo "Pylint score is too low: $pylint_score. Minimum required: 9.5"
             gh pr comment \
               ${{ github.event.pull_request.number }} \
-              --body "Failed! Pylint score is too low: $pylint_score. Minimum required: 9.5"
-              # --body "$(cat .github/not_enough_pylint_score.md)"
+              # --body "Failed! Pylint score is too low: $pylint_score. Minimum required: 9.5"
+              --body "$(cat .github/not_enough_pylint_score.md)"
             exit 1
           else
             echo "Pylint score is $pylint_score. Passed!"
