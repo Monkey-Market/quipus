@@ -1,0 +1,46 @@
+[MASTER]
+# Añade directorios a la lista de Python Path, separados por comas.
+init-hook='import sys; sys.path.append("YOUR PATH")'
+
+[BASIC]
+good-names=Hermes
+
+[MESSAGES CONTROL]
+disable=
+    too-many-locals,
+    too-many-arguments,
+    too-few-public-methods,
+    missing-module-docstring,
+    ; missing-class-docstring,
+    ; missing-function-docstring,
+    unspecified-encoding,
+    anomalous-backslash-in-string
+
+[FORMAT]
+max-line-length=88
+indent-string='    '
+ignore-long-lines=^(\s*#.*|\s*print\(.*|\s*https?:\/\/[^\s]+|\s*def .+\(.*\):|\s*if .+:)$
+
+[DESIGN]
+max-args=5
+max-locals=15
+max-returns=6
+max-branches=12
+max-statements=50
+max-parents=7
+max-attributes=7
+
+[TYPECHECK]
+ignored-modules=flask_sqlalchemy,sqlalchemy,sqlalchemy.orm,flask_marshmallow,marshmallow
+
+[REPORTS]
+reports=no
+
+[LOGGING]
+disable=logging-format-interpolation,logging-not-lazy
+
+[IMPORTS]
+disable=import-error,ungrouped-imports
+
+[SIMILARITIES]
+min-similarity-lines=4
