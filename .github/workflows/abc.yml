@@ -5,7 +5,7 @@ on:
     branches:
       - dev
   workflow_dispatch:
-    
+
 jobs:
   pylint:
     runs-on: ubuntu-latest
@@ -18,10 +18,9 @@ jobs:
         with:
           python-version: '3.12'
 
-      - name: Install dependencies
+      - name: Install pylint
         run: |
-          pip install poetry
-          poetry install
+          pip install pylint
 
       - name: Run pylint
         run: |
