@@ -2,9 +2,7 @@ _**Out of all the ways to write clean code, you really went and chose not to. Im
 
 ## :warning: Pylint Check Failed :warning:
 
-### Pylint Score: **{{pylint_score}}**
-
-#### Minimum required score: **9.5**
+### Pylint Score: **${PYLINT_SCORE}** / **9.5**
 
 It looks like your recent code changes did not meet the required Pylint score of **9.5**. Please review the Pylint output and make the necessary adjustments to improve code quality.
 
@@ -21,4 +19,4 @@ Feel free to reach out if you need help with any specific issue!
 
 ---
 
-This automated message was triggered by a failed Pylint check.
+> This automated message was triggered by a failed Pylint check.

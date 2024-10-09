@@ -26,16 +26,13 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          pylint_score=$(pylint src/ | grep 'Your code has been rated at' | awk '{print $7}' | cut -d '/' -f 1)
-          if (( $(echo "$pylint_score < 9.5" | bc -l) )); then
-            echo "Pylint score is too low: $pylint_score. Minimum required: 9.5"
-
-            cat .github/not_enough_pylint_score.md
-
+          export PYLINT_SCORE=$(pylint src/ | grep 'Your code has been rated at' | awk '{print $7}' | cut -d '/' -f 1)
+          if (( $(echo "$PYLINT_SCORE < 9.5" | bc -l) )); then
+            echo "Pylint score is too low: $PYLINT_SCORE. Minimum required: 9.5"
             gh pr comment \
               ${{ github.event.pull_request.number }} \
-              --body "$(cat .github/not_enough_pylint_score.md)"
+              --body "$(envsubst < .github/not_enough_pylint_score.md)"
             exit 1
           else
-            echo "Pylint score is $pylint_score. Passed!"
+            echo "Pylint score is $PYLINT_SCORE. Passed!"
           fi
