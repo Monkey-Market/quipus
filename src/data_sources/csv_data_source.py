@@ -1,5 +1,5 @@
 import pandas as pd
-from typing import Optional, List, Any
+from typing import Optional, List
 
 
 class CSVDataSource:

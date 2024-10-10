@@ -1,22 +1,23 @@
 import os
 from models.template import Template
 from services.template_manager import TemplateManager
-from services.s3_delivery import AWSConfig, S3Delivery
-from data_sources.csv_data_source import CSVDataSource
+from data_sources.xlsx_data_source import XLSXDataSource
 
 
 def main():
 
-    csv_data_source = CSVDataSource(file_path="data/certificates.csv", delimiter=";")
+    xlsx_data_source = XLSXDataSource(
+        file_path="data/certificates.xlsx", sheet_name="Sheet1"
+    )
 
-    full_data = csv_data_source.fetch_data()
-    print("Datos completos cargados desde el CSV:")
+    full_data = xlsx_data_source.fetch_data()
+    print("Datos completos cargados desde el XLSX:")
     print(full_data.head())
 
-    columns = csv_data_source.get_columns()
-    print(f"Columnas encontradas en el CSV: {columns}")
+    columns = xlsx_data_source.get_columns()
+    print(f"Columnas encontradas en el XLSX: {columns}")
 
-    filtered_data = csv_data_source.filter_data('lang == "es"')
+    filtered_data = xlsx_data_source.filter_data('lang == "es"')
     print(f"Datos filtrados (solo español):")
     print(filtered_data)
 
@@ -45,12 +46,6 @@ def main():
     print("Archivos PDF generados:")
     for file in mytuple:
         print(file)
-
-    print("Subiendo archivos a S3...")
-    S3Delivery(AWSConfig.from_profile()).upload_many_files(
-        files=mytuple,
-        bucket_name="",
-    )
 
 
 if __name__ == "__main__":
