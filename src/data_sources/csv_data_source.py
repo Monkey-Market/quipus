@@ -1,5 +1,6 @@
-import pandas as pd
 from typing import Optional, List
+
+import pandas as pd
 
 
 class CSVDataSource:
@@ -30,10 +31,26 @@ class CSVDataSource:
 
     @property
     def file_path(self) -> str:
+        """
+        Get the path to the CSV file.
+
+        Returns:
+            str: Path to the CSV file.
+        """
         return self.__file_path
 
     @file_path.setter
     def file_path(self, file_path: str) -> None:
+        """
+        Set the path to the CSV file.
+
+        Args:
+            file_path (str): Path to the CSV file.
+
+        Raises:
+            TypeError: If 'file_path' is not a string.
+            ValueError: If 'file_path' is an empty string.
+        """
         if not isinstance(file_path, str):
             raise TypeError("'file_path' must be a string.")
         if not file_path.strip():
@@ -43,10 +60,25 @@ class CSVDataSource:
 
     @property
     def delimiter(self) -> str:
+        """
+        Get the delimiter used in the CSV file.
+
+        Returns:
+            str: Delimiter used in the CSV file.
+        """
         return self.__delimiter
 
     @delimiter.setter
     def delimiter(self, delimiter: str) -> None:
+        """
+        Set the delimiter used in the CSV file.
+
+        Args:
+            delimiter (str): Delimiter used in the CSV file.
+
+        Raises:
+            TypeError: If 'delimiter' is not a string.
+        """
         if not isinstance(delimiter, str):
             raise TypeError("'delimiter' must be a string.")
         self.__delimiter = delimiter
@@ -54,6 +86,12 @@ class CSVDataSource:
 
     @property
     def encoding(self) -> str:
+        """
+        Get the encoding of the CSV file.
+
+        Returns:
+            str: Encoding of the CSV file.
+        """
         return self.__encoding
 
     @encoding.setter
@@ -105,4 +143,13 @@ class CSVDataSource:
         return self.dataframe.query(query)
 
     def __str__(self) -> str:
-        return f"CSVDataSource(file_path={self.file_path}, delimiter={self.delimiter}, encoding={self.encoding})"
+        """
+        Get a string representation of the CSVDataSource object.
+
+        Returns:
+            str: String representation of the object.
+        """
+        return (
+            f"CSVDataSource(file_path={self.file_path}, "
+            f"delimiter={self.delimiter}, encoding={self.encoding})"
+        )
