@@ -5,6 +5,9 @@ from data_sources.xlsx_data_source import XLSXDataSource
 
 
 def main():
+    """
+        Main function to run the program.
+    """
 
     xlsx_data_source = XLSXDataSource(
         file_path="data/certificates.xlsx", sheet_name="Sheet1"
@@ -18,7 +21,7 @@ def main():
     print(f"Columnas encontradas en el XLSX: {columns}")
 
     filtered_data = xlsx_data_source.filter_data('lang == "es"')
-    print(f"Datos filtrados (solo español):")
+    print("Datos filtrados (solo español):")
     print(filtered_data)
 
     template_manager = TemplateManager()
