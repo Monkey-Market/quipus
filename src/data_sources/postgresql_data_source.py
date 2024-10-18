@@ -1,5 +1,6 @@
-from psycopg_pool import ConnectionPool
 from typing import Optional, List, Any
+
+from psycopg_pool import ConnectionPool
 
 
 class PostgreSQLDataSource:
@@ -18,6 +19,7 @@ class PostgreSQLDataSource:
 
     def __init__(
         self,
+        *,
         host: str,
         database: str,
         user: str,
@@ -44,18 +46,38 @@ class PostgreSQLDataSource:
         Returns:
             ConnectionPool: Initialized connection pool.
         """
+        connection_string = (
+            f"dbname={self.database} user={self.user} password={self.password} "
+            f"host={self.host} port={self.port}"
+        )
         return ConnectionPool(
-            f"dbname={self.database} user={self.user} password={self.password} host={self.host} port={self.port}",
+            connection_string,
             min_size=1,
             max_size=pool_size,
         )
 
     @property
     def host(self) -> str:
+        """
+        Get the PostgreSQL server host.
+
+        Returns:
+            str: PostgreSQL server host.
+        """
         return self.__host
 
     @host.setter
     def host(self, host: str) -> None:
+        """
+        Set the PostgreSQL server host.
+
+        Args:
+            host (str): PostgreSQL server host.
+
+        Raises:
+            TypeError: If host is not a string.
+            ValueError: If host is an empty string.
+        """
         if not isinstance(host, str):
             raise TypeError("'host' must be a string.")
         if not host.strip():
@@ -64,10 +86,26 @@ class PostgreSQLDataSource:
 
     @property
     def port(self) -> int:
+        """
+        Get the PostgreSQL server port.
+
+        Returns:
+            int: PostgreSQL server port.
+        """
         return self.__port
 
     @port.setter
     def port(self, port: int) -> None:
+        """
+        Set the PostgreSQL server port.
+
+        Args:
+            port (int): PostgreSQL server port.
+
+        Raises:
+            TypeError: If port is not an integer.
+            ValueError: If port is not between 1 and 65535.
+        """
         if not isinstance(port, int):
             raise TypeError("'port' must be an integer.")
         if port not in range(1, 65536):
@@ -76,10 +114,26 @@ class PostgreSQLDataSource:
 
     @property
     def user(self) -> str:
+        """
+        Get the username for authentication.
+
+        Returns:
+            str: Username for authentication.
+        """
         return self.__user
 
     @user.setter
     def user(self, user: str) -> None:
+        """
+        Set the username for authentication.
+
+        Args:
+            user (str): Username for authentication.
+
+        Raises:
+            TypeError: If user is not a string.
+            ValueError: If user is an empty string.
+        """
         if not isinstance(user, str):
             raise TypeError("'user' must be a string.")
         if not user.strip():
@@ -88,10 +142,26 @@ class PostgreSQLDataSource:
 
     @property
     def password(self) -> str:
+        """
+        Get the password for authentication.
+
+        Returns:
+            str: Password for authentication.
+        """
         return self.__password
 
     @password.setter
     def password(self, password: str) -> None:
+        """
+        Set the password for authentication.
+
+        Args:
+            password (str): Password for authentication.
+
+        Raises:
+            TypeError: If password is not a string.
+            ValueError: If password is an empty string.
+        """
         if not isinstance(password, str):
             raise TypeError("'password' must be a string.")
         if not password.strip():
@@ -100,10 +170,26 @@ class PostgreSQLDataSource:
 
     @property
     def database(self) -> str:
+        """
+        Get the name of the database to connect to.
+
+        Returns:
+            str: Name of the database to connect to.
+        """
         return self.__database
 
     @database.setter
     def database(self, database: str) -> None:
+        """
+        Set the name of the database to connect to.
+
+        Args:
+            database (str): Name of the database to connect to.
+
+        Raises:
+            TypeError: If database is not a string.
+            ValueError: If database is an empty string.
+        """
         if not isinstance(database, str):
             raise TypeError("'database' must be a string.")
         if not database.strip():
@@ -112,10 +198,25 @@ class PostgreSQLDataSource:
 
     @property
     def timeout(self) -> int:
+        """
+        Get the query execution timeout in seconds.
+
+        Returns:
+            int: Query execution timeout in seconds."""
         return self.__timeout
 
     @timeout.setter
     def timeout(self, timeout: int) -> None:
+        """
+        Set the query execution timeout in seconds.
+
+        Args:
+            timeout (int): Query execution timeout in seconds.
+
+        Raises:
+            TypeError: If timeout is not an integer.
+            ValueError: If timeout is not between 0 and 3600 seconds.
+        """
         if not isinstance(timeout, int):
             raise TypeError("'timeout' must be an integer.")
 
@@ -176,15 +277,25 @@ class PostgreSQLDataSource:
         with self.__connection_pool.connection() as conn:
             with conn.cursor() as cursor:
                 cursor.execute(query)
-                if (
-                    cursor.description
-                ):  # Only if the query returns results (e.g., SELECT)
+
+                # Only if the query returns results (e.g., SELECT)
+                if cursor.description:
                     data = cursor.fetchall()
                     columns = [desc.name for desc in cursor.description]
                     return data, columns
-                else:
-                    conn.commit()  # For queries like INSERT, UPDATE, DELETE
-                    return None
+
+                # For queries like INSERT, UPDATE, DELETE
+                conn.commit()
+                return None
 
     def __str__(self) -> str:
-        return f"PostgreSQLDataSource(host={self.host}, port={self.port}, database={self.database}, user={self.user})"
+        """
+        Get a string representation of the PostgreSQLDataSource object.
+
+        Returns:
+            str: String representation of the PostgreSQLDataSource object.
+        """
+        return (
+            f"PostgreSQLDataSource(host={self.host}, port={self.port}, "
+            f"database={self.database}, user={self.user})"
+        )
