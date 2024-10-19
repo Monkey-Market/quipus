@@ -7,9 +7,9 @@ class AWSConfig:
     AWS configuration class.
 
     Attributes:
-        AWS_ACCESS_KEY_ID (str): AWS access key.
-        AWS_SECRET_ACCESS_KEY (str): AWS secret access key.
-        AWS_REGION (str): AWS region.
+        aws_access_key_id (str): AWS access key.
+        aws_secret_access_key (str): AWS secret access key.
+        aws_region (str): AWS region.
     """
 
     def __init__(
@@ -23,78 +23,78 @@ class AWSConfig:
             aws_secret_access_key (str): AWS secret access key.
             region (str): AWS region.
         """
-        self.AWS_ACCESS_KEY_ID = aws_access_key
-        self.AWS_SECRET_ACCESS_KEY = aws_secret_access_key
-        self.AWS_REGION = region
+        self.aws_access_key_id = aws_access_key
+        self.aws_secret_access_key = aws_secret_access_key
+        self.aws_region = region
 
-        @property
-        def AWS_ACCESS_KEY_ID(self) -> str:
-            """
-            Get the AWS access key.
-            """
-            return self._AWS_ACCESS_KEY_ID
+    @property
+    def aws_access_key_id(self) -> str:
+        """
+        Get the AWS access key.
+        """
+        return self._aws_access_key_id
 
-        @AWS_ACCESS_KEY_ID.setter
-        def AWS_ACCESS_KEY_ID(self, value: str) -> None:
-            """
-            Set the AWS access key.
+    @aws_access_key_id.setter
+    def aws_access_key_id(self, value: str) -> None:
+        """
+        Set the AWS access key.
 
-            Args:
-                value (str): AWS access key.
-            """
-            if not isinstance(value, str):
-                raise TypeError("AWS access key must be a string.")
+        Args:
+            value (str): AWS access key.
+        """
+        if not isinstance(value, str):
+            raise TypeError("AWS access key must be a string.")
 
-            if not value or len(value) == 0:
-                raise ValueError("AWS access key cannot be empty.")
+        if not value or len(value) == 0:
+            raise ValueError("AWS access key cannot be empty.")
 
-            self._AWS_ACCESS_KEY_ID = value
+        self._aws_access_key_id = value
 
-        @property
-        def AWS_SECRET_ACCESS_KEY(self) -> str:
-            """
-            Get the AWS secret access key.
-            """
-            return self._AWS_SECRET_ACCESS_KEY
+    @property
+    def aws_secret_access_key(self) -> str:
+        """
+        Get the AWS secret access key.
+        """
+        return self._aws_secret_access_key
 
-        @AWS_SECRET_ACCESS_KEY.setter
-        def AWS_SECRET_ACCESS_KEY(self, value: str) -> None:
-            """
-            Set the AWS secret access key.
+    @aws_secret_access_key.setter
+    def aws_secret_access_key(self, value: str) -> None:
+        """
+        Set the AWS secret access key.
 
-            Args:
-                value (str): AWS secret access key.
-            """
-            if not isinstance(value, str):
-                raise TypeError("AWS secret access key must be a string.")
+        Args:
+            value (str): AWS secret access key.
+        """
+        if not isinstance(value, str):
+            raise TypeError("AWS secret access key must be a string.")
 
-            if not value or len(value) == 0:
-                raise ValueError("AWS secret access key cannot be empty.")
+        if not value or len(value) == 0:
+            raise ValueError("AWS secret access key cannot be empty.")
 
-            self._AWS_SECRET_ACCESS_KEY = value
+        self._aws_secret_access_key = value
 
-        @property
-        def AWS_REGION(self) -> str:
-            """
-            Get the AWS region.
-            """
-            return self._AWS_REGION
+    @property
+    def aws_region(self) -> str:
+        """
+        Get the AWS region.
+        """
+        return self._aws_region
 
-        @AWS_REGION.setter
-        def AWS_REGION(self, value: str) -> None:
-            """
-            Set the AWS region.
+    @aws_region.setter
+    def aws_region(self, value: str) -> None:
+        """
+        Set the AWS region.
 
-            Args:
-                value (str): AWS region.
-            """
-            if not isinstance(value, str):
-                raise TypeError("AWS region must be a string.")
+        Args:
+            value (str): AWS region.
+        """
+        if not isinstance(value, str):
+            raise TypeError("AWS region must be a string.")
 
-            if not value or len(value) == 0:
-                raise ValueError("AWS region cannot be empty.")
+        if not value or len(value) == 0:
+            raise ValueError("AWS region cannot be empty.")
 
-            self._AWS_REGION = value
+        self._aws_region = value
 
     @staticmethod
     def from_profile(profile_name: Optional[str] = "") -> "AWSConfig":
@@ -102,7 +102,8 @@ class AWSConfig:
         Create an AWSConfig object from a profile name.
 
         Args:
-            profile_name (str): Profile name to be used. Will use the default profile if not provided.
+            profile_name (str): Profile name to be used.
+                Will use the default profile if not provided.
         """
         session = boto3.Session(profile_name=profile_name)
         credentials = session.get_credentials()
@@ -163,23 +164,23 @@ class S3Delivery:
 
         if not isinstance(file_path, str):
             raise TypeError("File path must be a string.")
-        elif not isinstance(bucket_name, str):
+        if not isinstance(bucket_name, str):
             raise TypeError("Bucket name must be a string.")
-        elif not isinstance(key, str):
+        if not isinstance(key, str):
             raise TypeError("Key must be a string.")
 
         if not file_path or len(file_path) == 0:
             raise ValueError("File path cannot be empty.")
-        elif not bucket_name or len(bucket_name) == 0:
+        if not bucket_name or len(bucket_name) == 0:
             raise ValueError("Bucket name cannot be empty.")
-        elif not key or len(key) == 0:
+        if not key or len(key) == 0:
             raise ValueError("Key cannot be empty.")
 
         s3 = boto3.client(
             "s3",
-            aws_access_key_id=self._aws_config._AWS_ACCESS_KEY_ID,
-            aws_secret_access_key=self._aws_config._AWS_SECRET_ACCESS_KEY,
-            region_name=self._aws_config._AWS_REGION,
+            aws_access_key_id=self._aws_config.aws_access_key_id,
+            aws_secret_access_key=self._aws_config.aws_secret_access_key,
+            region_name=self._aws_config.aws_region,
         )
         s3.upload_file(file_path, bucket_name, key)
 
@@ -200,9 +201,9 @@ class S3Delivery:
 
         s3 = boto3.client(
             "s3",
-            aws_access_key_id=self._aws_config.AWS_ACCESS_KEY_ID,
-            aws_secret_access_key=self._aws_config.AWS_SECRET_ACCESS_KEY,
-            region_name=self._aws_config.AWS_REGION,
+            aws_access_key_id=self._aws_config.aws_access_key_id,
+            aws_secret_access_key=self._aws_config.aws_secret_access_key,
+            region_name=self._aws_config.aws_region,
         )
         for file_path, key in files:
             s3.upload_file(file_path, bucket_name, key)
