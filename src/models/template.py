@@ -1,6 +1,5 @@
 import os
 from typing import Any, Optional, Self
-from string import Template as StringTemplate
 
 
 class Template:
@@ -123,7 +122,7 @@ class Template:
         Raises:
             TypeError: If 'value' is not a string (when not None).
             ValueError: If 'value' is an empty string.
-            FileNotFoundError: If the file at 'value' does not exist (when not None and not empty string).
+            FileNotFoundError: If the file at 'value' does not exist.
         """
         if value is None:
             self.__css_path = value
@@ -164,7 +163,7 @@ class Template:
         Raises:
             TypeError: If 'value' is not a string (when not None).
             ValueError: If 'value' is an empty string.
-            FileNotFoundError: If the file at 'value' does not exist (when not None and not empty string).
+            FileNotFoundError: If the file at 'value' does not exist.
         """
         if value is None:
             self.__assets_path = None

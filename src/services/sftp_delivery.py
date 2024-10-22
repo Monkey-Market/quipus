@@ -388,4 +388,3 @@ class SFTPDelivery:
                 "private_key": self.private_key,
             }
         )
-

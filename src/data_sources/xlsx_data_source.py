@@ -1,5 +1,6 @@
-import pandas as pd
 from typing import Optional, List
+
+import pandas as pd
 
 
 class XLSXDataSource:
@@ -26,10 +27,26 @@ class XLSXDataSource:
 
     @property
     def file_path(self) -> str:
+        """
+        Get the path to the Excel file.
+
+        Returns:
+            str: Path to the Excel file.
+        """
         return self.__file_path
 
     @file_path.setter
     def file_path(self, file_path: str) -> None:
+        """
+        Set the path to the Excel file.
+
+        Args:
+            file_path (str): Path to the Excel file.
+
+        Raises:
+            TypeError: If 'file_path' is not a string.
+            ValueError: If 'file_path' is an empty string.
+        """
         if not isinstance(file_path, str):
             raise TypeError("'file_path' must be a string.")
         if not file_path.strip():
@@ -38,10 +55,24 @@ class XLSXDataSource:
 
     @property
     def sheet_name(self) -> str:
+        """
+        Get the name of the sheet to load from the Excel file.
+
+        Returns:
+            str: Name of the sheet."""
         return self.__sheet_name
 
     @sheet_name.setter
     def sheet_name(self, sheet_name: str) -> None:
+        """
+        Set the name of the sheet to load from the Excel file.
+
+        Args:
+            sheet_name (str): Name of the sheet.
+
+        Raises:
+            TypeError: If 'sheet_name' is not a string.
+        """
         if not isinstance(sheet_name, str):
             raise TypeError("'sheet_name' must be a string.")
         self.__sheet_name = sheet_name
@@ -88,6 +119,12 @@ class XLSXDataSource:
         return self.dataframe.query(query)
 
     def __str__(self) -> str:
+        """
+        Get a string representation of the XLSXDataSource object.
+
+        Returns:
+            str: String representation of the object.
+        """
         return (
             f"XLSXDataSource(file_path={self.file_path}, sheet_name={self.sheet_name})"
         )
