@@ -1,8 +1,8 @@
 import os
 from typing import Any, Callable, Literal, Self
 from weasyprint import HTML
-from models.template import Template
-from data_sources.csv_data_source import CSVDataSource
+from ..models import Template
+from ..data_sources import CSVDataSource
 
 
 class TemplateManager:
