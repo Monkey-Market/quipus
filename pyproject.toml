@@ -8,7 +8,7 @@ authors = [
 ]
 readme = "README.md"
 package-mode = false
-license = "MIT"
+license = "GPL-3.0"
 
 [tool.poetry.dependencies]
 python = "^3.12"
