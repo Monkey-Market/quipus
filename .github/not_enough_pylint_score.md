@@ -13,7 +13,7 @@ It looks like your recent code changes did not meet the required Pylint score of
 
 Remember, maintaining a high Pylint score helps ensure code readability, maintainability, and consistency across the project.
 
-You can find our project's Pylint configuration in the [`.pylintrc`](https://github.com/Monkey-Market/Hermes/blob/dev/.pylintrc) file.
+You can find our project's Pylint configuration in the [`.pylintrc`](https://github.com/Monkey-Market/quipus/blob/dev/.pylintrc) file.
 
 Feel free to reach out if you need help with any specific issue!
 

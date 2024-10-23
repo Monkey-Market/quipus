@@ -1,8 +1,11 @@
 [tool.poetry]
-name = "hermes"
+name = "quipus"
 version = "0.1.0"
 description = ""
-authors = ["Jorge U. Alarcón <j1dev@proton.me>", "Fernando Nicolas Carrillo Lopez <pandasoncode@gmail.com>"]
+authors = [
+    "Jorge U. Alarcón <j1dev@proton.me>",
+    "Fernando Nicolas Carrillo Lopez <pandasoncode@gmail.com>",
+]
 readme = "README.md"
 package-mode = false
 license = "MIT"

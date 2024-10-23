@@ -3,7 +3,7 @@
 init-hook='import sys; sys.path.append("YOUR PATH")'
 
 [BASIC]
-good-names=Hermes
+good-names=quipus
 
 [MESSAGES CONTROL]
 disable=
