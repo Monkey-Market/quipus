@@ -7,7 +7,7 @@ authors = [
     "Fernando Nicolas Carrillo Lopez <pandasoncode@gmail.com>",
 ]
 readme = "README.md"
-package-mode = false
+package-mode = true
 license = "GPL-3.0"
 
 [tool.poetry.dependencies]
