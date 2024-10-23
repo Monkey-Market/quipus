@@ -56,7 +56,6 @@ class CSVDataSource:
         if not file_path.strip():
             raise ValueError("'file_path' cannot be an empty string.")
         self.__file_path = file_path
-        self.__load_data()
 
     @property
     def delimiter(self) -> str:
@@ -82,7 +81,6 @@ class CSVDataSource:
         if not isinstance(delimiter, str):
             raise TypeError("'delimiter' must be a string.")
         self.__delimiter = delimiter
-        self.__load_data()
 
     @property
     def encoding(self) -> str:
@@ -99,7 +97,6 @@ class CSVDataSource:
         if not isinstance(encoding, str):
             raise TypeError("'encoding' must be a string.")
         self.__encoding = encoding
-        self.__load_data()
 
     def fetch_data(self) -> pd.DataFrame:
         """

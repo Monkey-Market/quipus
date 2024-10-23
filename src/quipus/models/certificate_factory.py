@@ -1,6 +1,6 @@
 import pandas as pd
 
-from models.certificate import Certificate
+from .certificate import Certificate
 
 
 class CertificateFactory:
