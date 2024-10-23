@@ -1,4 +1,4 @@
-name: poetry build and poetry publish
+name: poetry build and publish
 
 on:
   pull_request:
@@ -22,8 +22,10 @@ jobs:
         shell: bash
         run: |
           pip install poetry
-          poetry config pypi-token.pypi ${{ secrets.PYPI_API_TOKEN }}
+          poetry config repositories.test-pypi https://test.pypi.org/legacy/
+          poetry version prerelease
+          poetry config pypi-token.test-pypi ${{ secrets.TEST_PYPI_API_TOKEN }}
 
       - name: poetry build and publish
         shell: bash
-        run: poetry publish --build
+        run: poetry publish -r test-pypi --build
