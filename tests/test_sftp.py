@@ -1,3 +1,5 @@
+import hashlib
+
 import paramiko
 import pytest
 
@@ -290,3 +292,50 @@ def test_sftp_delivery_connect_invalid_private_key(monkeypatch):
 
     with pytest.raises(paramiko.SSHException, match="Invalid private key"):
         sftp_delivery.connect()
+
+
+# ============== Extras ==============
+
+
+def test_sftp_delivery_upload_invalid_checksum_algorithm(
+    monkeypatch, sftp_delivery, tmp_path
+):
+    from quipus.services import sftp_delivery as sftp_module
+
+    monkeypatch.setattr("paramiko.SSHClient", MockSSHClient)
+    monkeypatch.setattr(sftp_module, "SFTPClient", MockSFTPClient)
+
+    sftp_delivery.connect()
+
+    local_file = tmp_path / "test.txt"
+    local_file.write_text("Contenido de prueba.")
+    remote_file = "/remote/test.txt"
+
+    with pytest.raises(ValueError):
+        sftp_delivery.upload(str(local_file), remote_file, algorithm="invalid_algo")
+
+
+def test_sftp_delivery_calculate_checksum(sftp_delivery, tmp_path):
+    local_file = tmp_path / "test.txt"
+    local_file.write_text("Contenido de prueba.")
+
+    checksum = sftp_delivery._SFTPDelivery__calculate_checksum(
+        str(local_file), algorithm="md5"
+    )
+    expected_checksum = hashlib.md5(b"Contenido de prueba.").hexdigest()
+    assert checksum == expected_checksum
+
+    assert checksum == expected_checksum
+
+
+def test_sftp_delivery_str(sftp_delivery):
+    sftp_str = str(sftp_delivery)
+    expected_str = str(
+        {
+            "host": "sftp.example.com",
+            "port": 22,
+            "username": "user",
+            "private_key": None,
+        }
+    )
+    assert sftp_str == expected_str
