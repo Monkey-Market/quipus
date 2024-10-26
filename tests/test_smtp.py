@@ -1,5 +1,7 @@
 import pytest
+import smtplib
 import os
+
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from email.mime.application import MIMEApplication
@@ -319,3 +321,265 @@ def test_email_builder_to_addresses_invalid_values():
             from_address="sender@example.com",
             to_addresses=["recipient@example.com", ""],
         )
+
+
+# ============== Tests for EmailSender ==============
+
+
+def test_email_sender_send_tls(monkeypatch, smtp_config):
+    smtp_config.use_ssl = False
+    smtp_config.use_tls = True
+
+    instances = []
+
+    class MockSMTP:
+        def __init__(self, server, port, timeout=None):
+            self.server = server
+            self.port = port
+            self.timeout = timeout
+            self.starttls_called = False
+            self.login_called_with = None
+            self.sendmail_called_with = None
+            self.quit_called = False
+            instances.append(self)
+
+        def starttls(self):
+            self.starttls_called = True
+
+        def login(self, username, password):
+            self.login_called_with = (username, password)
+
+        def sendmail(self, from_addr, to_addrs, msg):
+            self.sendmail_called_with = (from_addr, to_addrs, msg)
+
+        def quit(self):
+            self.quit_called = True
+
+    monkeypatch.setattr(smtplib, "SMTP", MockSMTP)
+
+    email_message = MIMEMultipart()
+    email_message["From"] = "sender@example.com"
+    email_message["To"] = "recipient@example.com"
+    email_message["Subject"] = "Test"
+
+    email_sender = EmailSender(smtp_config)
+    email_sender.send(email_message)
+
+    mock_smtp_instance = instances[0]
+
+    assert mock_smtp_instance.server == smtp_config.server
+    assert mock_smtp_instance.port == smtp_config.port
+    assert mock_smtp_instance.timeout == smtp_config.timeout
+    assert mock_smtp_instance.starttls_called is True
+    assert mock_smtp_instance.login_called_with == (
+        smtp_config.username,
+        smtp_config.password,
+    )
+    assert mock_smtp_instance.sendmail_called_with == (
+        "sender@example.com",
+        ["recipient@example.com"],
+        email_message.as_string(),
+    )
+    assert mock_smtp_instance.quit_called is True
+
+
+def test_email_sender_send_ssl(monkeypatch, smtp_config):
+    smtp_config.use_ssl = True
+    smtp_config.use_tls = False
+
+    instances = []
+
+    class MockSMTP_SSL:
+        def __init__(self, server, port, timeout=None):
+            self.server = server
+            self.port = port
+            self.timeout = timeout
+            self.login_called_with = None
+            self.sendmail_called_with = None
+            self.quit_called = False
+            instances.append(self)
+
+        def login(self, username, password):
+            self.login_called_with = (username, password)
+
+        def sendmail(self, from_addr, to_addrs, msg):
+            self.sendmail_called_with = (from_addr, to_addrs, msg)
+
+        def quit(self):
+            self.quit_called = True
+
+    monkeypatch.setattr(smtplib, "SMTP_SSL", MockSMTP_SSL)
+
+    email_message = MIMEMultipart()
+    email_message["From"] = "sender@example.com"
+    email_message["To"] = "recipient@example.com"
+    email_message["Subject"] = "Test"
+
+    email_sender = EmailSender(smtp_config)
+    email_sender.send(email_message)
+
+    mock_smtp_instance = instances[0]
+
+    assert mock_smtp_instance.server == smtp_config.server
+    assert mock_smtp_instance.port == smtp_config.port
+    assert mock_smtp_instance.timeout == smtp_config.timeout
+    assert mock_smtp_instance.login_called_with == (
+        smtp_config.username,
+        smtp_config.password,
+    )
+    assert mock_smtp_instance.sendmail_called_with == (
+        "sender@example.com",
+        ["recipient@example.com"],
+        email_message.as_string(),
+    )
+    assert mock_smtp_instance.quit_called is True
+
+
+def test_email_sender_send_plain(monkeypatch, smtp_config):
+    smtp_config.use_ssl = False
+    smtp_config.use_tls = False
+
+    instances = []
+
+    class MockSMTP:
+        def __init__(self, server, port, timeout=None):
+            self.server = server
+            self.port = port
+            self.timeout = timeout
+            self.starttls_called = False
+            self.login_called_with = None
+            self.sendmail_called_with = None
+            self.quit_called = False
+            instances.append(self)
+
+        def login(self, username, password):
+            self.login_called_with = (username, password)
+
+        def sendmail(self, from_addr, to_addrs, msg):
+            self.sendmail_called_with = (from_addr, to_addrs, msg)
+
+        def quit(self):
+            self.quit_called = True
+
+    monkeypatch.setattr(smtplib, "SMTP", MockSMTP)
+
+    email_message = MIMEMultipart()
+    email_message["From"] = "sender@example.com"
+    email_message["To"] = "recipient@example.com"
+    email_message["Subject"] = "Test"
+
+    email_sender = EmailSender(smtp_config)
+    email_sender.send(email_message)
+
+    mock_smtp_instance = instances[0]
+
+    assert mock_smtp_instance.server == smtp_config.server
+    assert mock_smtp_instance.port == smtp_config.port
+    assert mock_smtp_instance.timeout == smtp_config.timeout
+    assert mock_smtp_instance.login_called_with == (
+        smtp_config.username,
+        smtp_config.password,
+    )
+    assert mock_smtp_instance.sendmail_called_with == (
+        "sender@example.com",
+        ["recipient@example.com"],
+        email_message.as_string(),
+    )
+    assert mock_smtp_instance.quit_called is True
+
+
+def test_email_sender_send_multiple_recipients(monkeypatch, smtp_config):
+    smtp_config.use_tls = True
+    instances = []
+
+    class MockSMTP:
+        def __init__(self, server, port, timeout=None):
+            self.server = server
+            self.port = port
+            self.timeout = timeout
+            self.login_called_with = None
+            self.sendmail_called_with = None
+            self.quit_called = False
+            self.starttls_called = False
+            instances.append(self)
+
+        def starttls(self):
+            self.starttls_called = True
+
+        def login(self, username, password):
+            self.login_called_with = (username, password)
+
+        def sendmail(self, from_addr, to_addrs, msg):
+            self.sendmail_called_with = (from_addr, to_addrs, msg)
+
+        def quit(self):
+            self.quit_called = True
+
+    monkeypatch.setattr(smtplib, "SMTP", MockSMTP)
+
+    email_builder = EmailMessageBuilder(
+        from_address="sender@example.com",
+        to_addresses=["recipient1@example.com", "recipient2@example.com"],
+    )
+    email_builder.add_cc("cc@example.com")
+    email_builder.with_subject("Test Subject")
+    email_builder.with_body("Test Body")
+
+    email_message = email_builder.build()
+    email_sender = EmailSender(smtp_config)
+    email_sender.send(email_message)
+
+    expected_recipients = [
+        "recipient1@example.com",
+        "recipient2@example.com",
+        "cc@example.com",
+    ]
+
+    mock_smtp_instance = instances[0]
+
+    assert mock_smtp_instance.starttls_called is True
+    assert mock_smtp_instance.login_called_with == (
+        smtp_config.username,
+        smtp_config.password,
+    )
+    assert mock_smtp_instance.sendmail_called_with == (
+        "sender@example.com",
+        expected_recipients,
+        email_message.as_string(),
+    )
+    assert mock_smtp_instance.quit_called is True
+
+
+def test_email_sender_send_exception(monkeypatch, smtp_config):
+    class MockSMTP:
+        def __init__(self, server, port, timeout=None):
+            pass
+
+        def starttls(self):
+            pass
+
+        def login(self, username, password):
+            pass
+
+        def sendmail(self, from_addr, to_addrs, msg):
+            raise smtplib.SMTPException("Sending failed")
+
+        def quit(self):
+            pass
+
+    smtp_config.use_tls = True
+    smtp_config.use_ssl = False
+
+    monkeypatch.setattr(smtplib, "SMTP", MockSMTP)
+
+    email_message = MIMEMultipart()
+    email_message["From"] = "sender@example.com"
+    email_message["To"] = "recipient@example.com"
+    email_message["Subject"] = "Test"
+
+    email_sender = EmailSender(smtp_config)
+
+    with pytest.raises(smtplib.SMTPException) as exc_info:
+        email_sender.send(email_message)
+
+    assert str(exc_info.value) == "Sending failed"
