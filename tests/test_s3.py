@@ -1,6 +1,6 @@
 import pytest
-
 import boto3
+from botocore.exceptions import NoCredentialsError
 
 from quipus import AWSConfig, S3Delivery
 
@@ -20,7 +20,7 @@ def s3_delivery(aws_config):
 
 
 class MockS3Client:
-    def __init__(self):
+    def __init__(self, *args, **kwargs):
         self.uploaded_files = {}
 
     def upload_file(self, Filename, Bucket, Key):
@@ -88,3 +88,100 @@ def test_aws_config_from_profile(monkeypatch):
     assert aws_config.aws_access_key_id == "profile_access_key"
     assert aws_config.aws_secret_access_key == "profile_secret_key"
     assert aws_config.aws_region == "us-west-2"
+
+
+# ============== Tests for S3Delivery ==============
+
+
+def test_s3_delivery_upload_file(monkeypatch, s3_delivery, tmp_path):
+    mock_s3_client = MockS3Client()
+
+    def mock_boto3_client(*args, **kwargs):
+        assert args[0] == "s3"
+        return mock_s3_client
+
+    monkeypatch.setattr(boto3, "client", mock_boto3_client)
+
+    local_file = tmp_path / "test.txt"
+    local_file.write_text("Contenido de prueba.")
+
+    bucket_name = "my-bucket"
+    key = "folder/test.txt"
+
+    s3_delivery.upload_file(str(local_file), bucket_name, key)
+
+    assert key in mock_s3_client.uploaded_files
+    uploaded_file = mock_s3_client.uploaded_files[key]
+    assert uploaded_file["Bucket"] == bucket_name
+    assert uploaded_file["Filename"] == str(local_file)
+
+
+def test_s3_delivery_upload_many_files(monkeypatch, s3_delivery, tmp_path):
+    mock_s3_client = MockS3Client()
+
+    def mock_boto3_client(*args, **kwargs):
+        return mock_s3_client
+
+    monkeypatch.setattr(boto3, "client", mock_boto3_client)
+
+    local_file1 = tmp_path / "test1.txt"
+    local_file1.write_text("Contenido de prueba 1.")
+
+    local_file2 = tmp_path / "test2.txt"
+    local_file2.write_text("Contenido de prueba 2.")
+
+    files = [
+        (str(local_file1), "folder/test1.txt"),
+        (str(local_file2), "folder/test2.txt"),
+    ]
+
+    bucket_name = "my-bucket"
+
+    s3_delivery.upload_many_files(files, bucket_name)
+
+    uploaded_files = mock_s3_client.uploaded_files
+    assert "folder/test1.txt" in uploaded_files
+    assert "folder/test2.txt" in uploaded_files
+
+
+def test_s3_delivery_upload_file_invalid_parameters(s3_delivery):
+    with pytest.raises(TypeError):
+        s3_delivery.upload_file(123, "bucket", "key")
+    with pytest.raises(ValueError):
+        s3_delivery.upload_file("", "bucket", "key")
+
+    with pytest.raises(TypeError):
+        s3_delivery.upload_file("path", 123, "key")
+    with pytest.raises(ValueError):
+        s3_delivery.upload_file("path", "", "key")
+
+    with pytest.raises(TypeError):
+        s3_delivery.upload_file("path", "bucket", 123)
+    with pytest.raises(ValueError):
+        s3_delivery.upload_file("path", "bucket", "")
+
+
+def test_s3_delivery_upload_file_no_credentials(monkeypatch, s3_delivery, tmp_path):
+    def mock_boto3_client(*args, **kwargs):
+        raise NoCredentialsError()
+
+    monkeypatch.setattr(boto3, "client", mock_boto3_client)
+
+    local_file = tmp_path / "test.txt"
+    local_file.write_text("Contenido de prueba.")
+    bucket_name = "my-bucket"
+    key = "folder/test.txt"
+
+    with pytest.raises(NoCredentialsError):
+        s3_delivery.upload_file(str(local_file), bucket_name, key)
+
+
+def test_s3_delivery_upload_many_files_invalid_parameters(s3_delivery):
+    with pytest.raises(TypeError):
+        s3_delivery.upload_many_files("not a list", "bucket")
+
+    with pytest.raises(TypeError):
+        s3_delivery.upload_many_files([], 123)
+
+    with pytest.raises(TypeError):
+        s3_delivery.upload_many_files([("path", "key")], 123)
