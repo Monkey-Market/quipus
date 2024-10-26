@@ -151,7 +151,8 @@ class TemplateManager:
         if len(self.templates) == 1:
             for item in self.data:
                 html: HTML = HTML(
-                    string=self.templates[0].render_html_with_values(values=item)
+                    string=self.templates[0].render_html_with_values(values=item),
+                    base_url=self.templates[0].html_path,
                 )
                 html.write_pdf(
                     target=f"{output_path}/{self.decide_filename_func(item)}.pdf"
@@ -165,7 +166,10 @@ class TemplateManager:
                 template: Template = self.__get_template_by_html_path(
                     self.decide_template_func(item)
                 )
-                html: HTML = HTML(string=template.render_html_with_values(values=item))
+                html: HTML = HTML(
+                    string=template.render_html_with_values(values=item),
+                    base_url=template.html_path,
+                )
                 html.write_pdf(
                     target=f"{output_path}/{self.decide_filename_func(item)}.pdf"
                 )
