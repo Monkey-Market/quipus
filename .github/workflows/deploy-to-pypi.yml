@@ -27,8 +27,7 @@ jobs:
         shell: bash
         run: |
           pip install poetry
-          poetry config repositories.pypi https://test.pypi.org/legacy/
-          poetry config pypi-token.pypi ${{ secrets.TEST_PYPI_API_TOKEN }}
+          poetry config pypi-token.pypi ${{ secrets.PYPI_API_TOKEN }}
 
       - name: Bump version
         run: |
@@ -62,4 +61,4 @@ jobs:
 
       - name: Poetry build and publish
         shell: bash
-        run: poetry publish -r pypi --build
+        run: poetry publish --build
