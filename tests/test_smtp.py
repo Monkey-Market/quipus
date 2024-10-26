@@ -583,3 +583,37 @@ def test_email_sender_send_exception(monkeypatch, smtp_config):
         email_sender.send(email_message)
 
     assert str(exc_info.value) == "Sending failed"
+
+
+# ============== Extras ==============
+
+
+def test_add_attachment_invalid_filename(email_builder):
+    attachment = MIMEText("Attachment content")
+
+    with pytest.raises(TypeError):
+        email_builder.add_attachment(attachment, filename=123)
+
+    with pytest.raises(ValueError):
+        email_builder.add_attachment(attachment, filename="   ")
+
+
+def test_add_attachment_from_nonexistent_path(monkeypatch, email_builder):
+    def mock_exists(path):
+        return False
+
+    monkeypatch.setattr(os.path, "exists", mock_exists)
+
+    with pytest.raises(FileNotFoundError):
+        email_builder.add_attachment_from_path("nonexistent/path.txt")
+
+
+def test_add_custom_header_invalid(email_builder):
+    with pytest.raises(TypeError):
+        email_builder.add_custom_header(123, "value")
+
+    with pytest.raises(ValueError):
+        email_builder.add_custom_header("X-Header", "")
+
+    with pytest.raises(TypeError):
+        email_builder.add_custom_header("X-Header", 456)
