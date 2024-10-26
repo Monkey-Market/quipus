@@ -1,31 +1,65 @@
-name: poetry build and publish
+name: Continuous Integration
 
 on:
   pull_request:
     branches:
-      - dev
-  workflow_dispatch:
+      - main
+    types: closed
+    paths:
+      - quipus/**
 
 jobs:
-  publish-to-pypi:
+  ci:
+    if: github.event.pull_request.merged == true
     runs-on: ubuntu-22.04
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          ref: main
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v4
         with:
           python-version: '3.12'
-        
-      - name: install and configure poetry
+
+      - name: Install and configure poetry
         shell: bash
         run: |
           pip install poetry
-          poetry config repositories.test-pypi https://test.pypi.org/legacy/
-          poetry version prerelease
-          poetry config pypi-token.test-pypi ${{ secrets.TEST_PYPI_API_TOKEN }}
+          poetry config repositories.pypi https://test.pypi.org/legacy/
+          poetry config pypi-token.pypi ${{ secrets.TEST_PYPI_API_TOKEN }}
 
-      - name: poetry build and publish
+      - name: Bump version
+        run: |
+          branch_name="${{ github.head_ref }}"
+
+          if [[ "$branch_name" =~ ^(ft/|feat/|feature/) ]]; then
+            poetry version minor
+          else
+            poetry version patch
+          fi
+
+      - name: Identify on GitHub
+        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "action@github.com"
+
+      - name: Commit changes
+        run: |
+          git add .
+          git commit -m "$(poetry version -s)"
+
+      - name: Create tag
+        run: |
+          git tag v$(poetry version -s)
+
+      - name: Push changes
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git push origin main --tags
+
+      - name: Poetry build and publish
         shell: bash
-        run: poetry publish -r test-pypi --build
+        run: poetry publish -r pypi --build
