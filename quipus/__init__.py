@@ -6,6 +6,7 @@ files or documents through email, SFTP, or S3.
 
 Classes:
     CSVDataSource: Loads data from CSV files.
+    DataFrameDataSource: Loads data from pandas DataFrames.
     PostgreSQLDataSource: Loads data from PostgreSQL databases.
     XLSXDataSource: Loads data from XLSX files.
     Certificate: Represents a certificate entity.
@@ -19,7 +20,12 @@ Classes:
     TemplateManager: Manages document templates and integrates them with data sources.
 """
 
-from .data_sources import CSVDataSource, PostgreSQLDataSource, XLSXDataSource
+from .data_sources import (
+    CSVDataSource,
+    DataFrameDataSource,
+    PostgreSQLDataSource,
+    XLSXDataSource,
+)
 from .models import Certificate, CertificateFactory, Template
 from .services import (
     EmailMessageBuilder,
@@ -32,6 +38,7 @@ from .services import (
 
 __all__ = [
     "CSVDataSource",
+    "DataFrameDataSource",
     "PostgreSQLDataSource",
     "XLSXDataSource",
     "Certificate",
