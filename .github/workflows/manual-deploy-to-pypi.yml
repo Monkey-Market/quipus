@@ -1,0 +1,26 @@
+name: Continuous Integration
+
+on:
+  workflow_dispatch:
+
+jobs:
+  ci:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+ 
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12'
+
+      - name: Install and configure poetry
+        shell: bash
+        run: |
+          pip install poetry
+          poetry config pypi-token.pypi ${{ secrets.PYPI_API_TOKEN }}
+
+      - name: Poetry build and publish
+        shell: bash
+        run: poetry publish --build
