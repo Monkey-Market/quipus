@@ -97,5 +97,5 @@ class DataFrameDataSource:
         """
         return (
             f"DataFrameDataSource(dataframe with {self.dataframe.shape[0]} rows"
-            f" and {self.dataframe.shape[1]} columns."
+            f" and {self.dataframe.shape[1]} columns)"
         )

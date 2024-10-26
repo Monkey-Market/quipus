@@ -63,5 +63,5 @@ def test_filter_data_invalid_query(dataframe_source):
 def test_str(dataframe_source):
     assert (
         str(dataframe_source)
-        == "DataFrameDataSource(dataframe with 4 rows and 3 columns."
+        == "DataFrameDataSource(dataframe with 4 rows and 3 columns)"
     )
