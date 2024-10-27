@@ -103,7 +103,7 @@ def test_s3_delivery_upload_file(monkeypatch, s3_delivery, tmp_path):
     monkeypatch.setattr(boto3, "client", mock_boto3_client)
 
     local_file = tmp_path / "test.txt"
-    local_file.write_text("Contenido de prueba.")
+    local_file.write_text("Test content.")
 
     bucket_name = "my-bucket"
     key = "folder/test.txt"
@@ -125,10 +125,10 @@ def test_s3_delivery_upload_many_files(monkeypatch, s3_delivery, tmp_path):
     monkeypatch.setattr(boto3, "client", mock_boto3_client)
 
     local_file1 = tmp_path / "test1.txt"
-    local_file1.write_text("Contenido de prueba 1.")
+    local_file1.write_text("Test content 1.")
 
     local_file2 = tmp_path / "test2.txt"
-    local_file2.write_text("Contenido de prueba 2.")
+    local_file2.write_text("Test content 2.")
 
     files = [
         (str(local_file1), "folder/test1.txt"),
@@ -168,7 +168,7 @@ def test_s3_delivery_upload_file_no_credentials(monkeypatch, s3_delivery, tmp_pa
     monkeypatch.setattr(boto3, "client", mock_boto3_client)
 
     local_file = tmp_path / "test.txt"
-    local_file.write_text("Contenido de prueba.")
+    local_file.write_text("Test content.")
     bucket_name = "my-bucket"
     key = "folder/test.txt"
 

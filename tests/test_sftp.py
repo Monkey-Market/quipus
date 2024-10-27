@@ -165,14 +165,14 @@ def test_sftp_delivery_upload_file(monkeypatch, sftp_delivery, tmp_path):
     sftp_delivery.connect()
 
     local_file = tmp_path / "test.txt"
-    local_file.write_text("Contenido de prueba.")
+    local_file.write_text("Test content.")
 
     remote_file = "/remote/test.txt"
 
     sftp_delivery.upload_file(str(local_file), remote_file)
 
     assert remote_file in sftp_delivery.sftp_client.files
-    assert sftp_delivery.sftp_client.files[remote_file] == b"Contenido de prueba."
+    assert sftp_delivery.sftp_client.files[remote_file] == b"Test content."
 
 
 def test_sftp_delivery_download_file(monkeypatch, sftp_delivery, tmp_path):
@@ -184,13 +184,13 @@ def test_sftp_delivery_download_file(monkeypatch, sftp_delivery, tmp_path):
     sftp_delivery.connect()
 
     remote_file = "/remote/test.txt"
-    sftp_delivery.sftp_client.files[remote_file] = b"Contenido de prueba."
+    sftp_delivery.sftp_client.files[remote_file] = b"Test content."
 
     local_file = tmp_path / "test.txt"
 
     sftp_delivery.download_file(remote_file, str(local_file))
 
-    assert local_file.read_bytes() == b"Contenido de prueba."
+    assert local_file.read_bytes() == b"Test content."
 
 
 def test_sftp_delivery_upload_with_verification(monkeypatch, sftp_delivery, tmp_path):
@@ -204,7 +204,7 @@ def test_sftp_delivery_upload_with_verification(monkeypatch, sftp_delivery, tmp_
     sftp_delivery.connect()
 
     local_file = tmp_path / "test.txt"
-    local_file.write_text("Contenido de prueba.")
+    local_file.write_text("Test content.")
 
     remote_file = "/remote/test.txt"
 
@@ -220,7 +220,7 @@ def test_sftp_delivery_upload_with_verification_failure(
 
     class MockSFTPClientCorrupt(MockSFTPClient):
         def put(self, local_file, remote_file):
-            self.files[remote_file] = b"Contenido corrupto."
+            self.files[remote_file] = b"Corrupted content."
 
     class MockSSHClientCorrupt(MockSSHClient):
         def __init__(self):
@@ -234,7 +234,7 @@ def test_sftp_delivery_upload_with_verification_failure(
     sftp_delivery.connect()
 
     local_file = tmp_path / "test.txt"
-    local_file.write_text("Contenido de prueba.")
+    local_file.write_text("Test content.")
 
     remote_file = "/remote/test.txt"
 
@@ -266,7 +266,7 @@ def test_sftp_delivery_download_file_without_connection(sftp_delivery, tmp_path)
 
 def test_sftp_delivery_upload_file_without_connection(sftp_delivery, tmp_path):
     local_file = tmp_path / "test.txt"
-    local_file.write_text("Contenido de prueba.")
+    local_file.write_text("Test content.")
     remote_file = "/remote/test.txt"
 
     with pytest.raises(ValueError, match="SFTP connection not established"):
@@ -308,7 +308,7 @@ def test_sftp_delivery_upload_invalid_checksum_algorithm(
     sftp_delivery.connect()
 
     local_file = tmp_path / "test.txt"
-    local_file.write_text("Contenido de prueba.")
+    local_file.write_text("Test content.")
     remote_file = "/remote/test.txt"
 
     with pytest.raises(ValueError):
@@ -317,12 +317,12 @@ def test_sftp_delivery_upload_invalid_checksum_algorithm(
 
 def test_sftp_delivery_calculate_checksum(sftp_delivery, tmp_path):
     local_file = tmp_path / "test.txt"
-    local_file.write_text("Contenido de prueba.")
+    local_file.write_text("Test content.")
 
     checksum = sftp_delivery._SFTPDelivery__calculate_checksum(
         str(local_file), algorithm="md5"
     )
-    expected_checksum = hashlib.md5(b"Contenido de prueba.").hexdigest()
+    expected_checksum = hashlib.md5(b"Test content.").hexdigest()
     assert checksum == expected_checksum
 
     assert checksum == expected_checksum

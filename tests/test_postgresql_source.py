@@ -131,7 +131,7 @@ def test_postgresql_data_source_close_pool(mocked_connection_pool):
     postgresql_data_source.close_pool()
     assert getattr(
         mock_pool, "closed", False
-    ), "El pool de conexiones debería estar cerrado."
+    ), "The connection pool should be closed."
 
 
 def test_postgresql_data_source_str(postgresql_data_source):
