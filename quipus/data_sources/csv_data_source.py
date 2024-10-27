@@ -137,7 +137,10 @@ class CSVDataSource:
         if self.dataframe is None:
             raise RuntimeError("No data loaded from the CSV file.")
 
-        return self.dataframe.query(query)
+        try:
+            return self.dataframe.query(query)
+        except Exception as e:
+            raise ValueError(f"Invalid query: {query}") from e
 
     def __str__(self) -> str:
         """

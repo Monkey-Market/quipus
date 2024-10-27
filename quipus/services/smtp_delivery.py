@@ -1021,9 +1021,16 @@ class EmailSender:
             self.smtp_config.username,
             self.smtp_config.password,
         )
+
+        to_addrs = []
+        for header in ["To", "Cc"]:
+            addresses = email_message.get_all(header, [])
+            for addr in addresses[0].split(","):
+                to_addrs.append(addr.strip())
+
         server.sendmail(
             email_message["From"],
-            email_message["To"].split(", "),
+            to_addrs,
             email_message.as_string(),
         )
         server.quit()

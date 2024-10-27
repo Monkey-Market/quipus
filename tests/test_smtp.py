@@ -1,410 +1,662 @@
-import unittest
-from unittest.mock import patch
-from email.mime.multipart import MIMEMultipart
-from email.mime.base import MIMEBase
+import pytest
+import smtplib
 import os
 
-from services.smtp_delivery import SMTPConfig, EmailMessageBuilder, EmailSender
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+from email.mime.application import MIMEApplication
+
+from quipus import SMTPConfig, EmailMessageBuilder, EmailSender
 
 
-class TestEmailMessageBuilder(unittest.TestCase):
+@pytest.fixture
+def smtp_config():
+    return SMTPConfig(
+        server="smtp.example.com",
+        port=587,
+        username="user@example.com",
+        password="password",
+        use_tls=True,
+        use_ssl=False,
+        timeout=10,
+    )
 
-    def setUp(self):
-        """Setup an EmailMessageBuilder instance for testing."""
-        self.builder = EmailMessageBuilder(
-            "test@example.com", ["recipient@example.com"]
+
+@pytest.fixture
+def email_builder():
+    return EmailMessageBuilder(
+        from_address="sender@example.com",
+        to_addresses=["recipient@example.com"],
+    )
+
+
+# ============== Tests for SMTPConfig ==============
+
+
+def test_smtp_config_valid(smtp_config):
+    assert smtp_config.server == "smtp.example.com"
+    assert smtp_config.port == 587
+    assert smtp_config.username == "user@example.com"
+    assert smtp_config.password == "password"
+    assert smtp_config.use_tls is True
+    assert smtp_config.use_ssl is False
+    assert smtp_config.timeout == 10
+
+
+def test_smtp_config_server_invalid_type():
+    with pytest.raises(TypeError):
+        SMTPConfig(
+            server=123,
+            port=587,
+            username="user@example.com",
+            password="password",
         )
 
-    def test_initialization(self):
-        """Test initialization of the EmailMessageBuilder class."""
-        self.assertEqual(self.builder.from_address, "test@example.com")
-        self.assertEqual(self.builder.to_addresses, ["recipient@example.com"])
-        self.assertEqual(self.builder.subject, "")
-        self.assertEqual(self.builder.body, "")
-        self.assertEqual(self.builder.body_type, "plain")
-        self.assertEqual(self.builder.attachments, [])
-        self.assertEqual(self.builder.custom_headers, {})
 
-    def test_from_address_setter(self):
-        """Test setting a valid from address."""
-        with self.assertRaises(TypeError):
-            self.builder.from_address = 123
-
-        with self.assertRaises(ValueError):
-            self.builder.from_address = ""
-
-        self.builder.from_address = "new@example.com"
-        self.assertEqual(self.builder.from_address, "new@example.com")
-
-    def test_to_addresses_setter(self):
-        """Test setting valid to addresses."""
-        with self.assertRaises(TypeError):
-            self.builder.to_addresses = "not_a_list"
-
-        with self.assertRaises(ValueError):
-            self.builder.to_addresses = []
-
-        with self.assertRaises(TypeError):
-            self.builder.to_addresses = [123]
-
-        with self.assertRaises(ValueError):
-            self.builder.to_addresses = [""]
-
-        self.builder.to_addresses = ["new@example.com"]
-        self.assertEqual(self.builder.to_addresses, ["new@example.com"])
-
-    def test_subject_setter(self):
-        """Test setting a valid subject."""
-        with self.assertRaises(TypeError):
-            self.builder.subject = 123
-
-        self.builder.subject = "New Subject"
-        self.assertEqual(self.builder.subject, "New Subject")
-
-    def test_body_setter(self):
-        """Test setting a valid body."""
-        with self.assertRaises(TypeError):
-            self.builder.body = 123
-
-        self.builder.body = "New Body"
-        self.assertEqual(self.builder.body, "New Body")
-
-    def test_body_type_setter(self):
-        """Test setting a valid body type."""
-        with self.assertRaises(TypeError):
-            self.builder.body_type = 123
-
-        with self.assertRaises(ValueError):
-            self.builder.body_type = "invalid"
-
-        self.builder.body_type = "html"
-        self.assertEqual(self.builder.body_type, "html")
-
-    def test_attachments_setter(self):
-        """Test setting valid attachments."""
-        with self.assertRaises(TypeError):
-            self.builder.attachments = "not_a_list"
-
-        self.builder.attachments = []
-        self.assertEqual(self.builder.attachments, [])
-
-    def test_custom_headers_setter(self):
-        """Test setting valid custom headers."""
-        with self.assertRaises(TypeError):
-            self.builder.custom_headers = "not_a_dict"
-
-        with self.assertRaises(TypeError):
-            self.builder.custom_headers = {123: "value"}
-
-        with self.assertRaises(ValueError):
-            self.builder.custom_headers = {"": "value"}
-
-        self.builder.custom_headers = {"X-Test": "value"}
-        self.assertEqual(self.builder.custom_headers, {"X-Test": "value"})
-
-    def test_add_recipient(self):
-        """Test adding a recipient."""
-        with self.assertRaises(TypeError):
-            self.builder.add_recipient(123)
-
-        with self.assertRaises(ValueError):
-            self.builder.add_recipient("")
-
-        self.builder.add_recipient("new@example.com")
-        self.assertIn("new@example.com", self.builder.to_addresses)
-
-    def test_with_subject(self):
-        """Test setting a subject using the with_subject method."""
-        self.builder.with_subject("New Subject")
-        self.assertEqual(self.builder.subject, "New Subject")
-
-    def test_with_body(self):
-        """Test setting a body using the with_body method."""
-        self.builder.with_body("New Body", "html")
-        self.assertEqual(self.builder.body, "New Body")
-        self.assertEqual(self.builder.body_type, "html")
-
-    def test_add_attachment(self):
-        """Test adding an attachment."""
-        mime_base = MIMEBase("application", "octet-stream")
-        with self.assertRaises(TypeError):
-            self.builder.add_attachment("not_mime_base")
-
-        self.builder.add_attachment(mime_base, "filename.txt")
-        self.assertIn((mime_base, "filename.txt"), self.builder.attachments)
-
-    def test_add_attachment_from_path(self):
-        """Test adding an attachment from a file path."""
-        with self.assertRaises(TypeError):
-            self.builder.add_attachment_from_path(123)
-
-        with self.assertRaises(ValueError):
-            self.builder.add_attachment_from_path("")
-
-        with self.assertRaises(FileNotFoundError):
-            self.builder.add_attachment_from_path("non_existent_file.txt")
-
-        temp_file_path = "temp_test_file.txt"
-        with open(temp_file_path, "w") as temp_file:
-            temp_file.write("Test content")
-
-        self.builder.add_attachment_from_path(temp_file_path)
-        self.assertTrue(
-            any(
-                filename == "temp_test_file.txt"
-                for _, filename in self.builder.attachments
-            )
+def test_smtp_config_server_empty_string():
+    with pytest.raises(ValueError):
+        SMTPConfig(
+            server="   ",
+            port=587,
+            username="user@example.com",
+            password="password",
         )
 
-        os.remove(temp_file_path)
 
-    def test_add_custom_header(self):
-        """Test adding a custom header."""
-        with self.assertRaises(TypeError):
-            self.builder.add_custom_header(123, "value")
-
-        with self.assertRaises(ValueError):
-            self.builder.add_custom_header("", "value")
-
-        with self.assertRaises(TypeError):
-            self.builder.add_custom_header("X-Test", 123)
-
-        with self.assertRaises(ValueError):
-            self.builder.add_custom_header("X-Test", "")
-
-        self.builder.add_custom_header("X-Test", "value")
-        self.assertEqual(self.builder.custom_headers["X-Test"], "value")
-
-    def test_build(self):
-        """Test building an email message."""
-        self.builder.with_subject("Test Subject").with_body("Test Body", "plain")
-        email_message = self.builder.build()
-        self.assertIsInstance(email_message, MIMEMultipart)
-        self.assertEqual(email_message["From"], "test@example.com")
-        self.assertEqual(email_message["To"], "recipient@example.com")
-        self.assertEqual(email_message["Subject"], "Test Subject")
-
-    def test_str_method(self):
-        """Test the __str__ method of the EmailMessageBuilder class."""
-        expected_str = str(
-            {
-                "from_address": "test@example.com",
-                "to_addresses": ["recipient@example.com"],
-                "cc_addresses": [],
-                "subject": "",
-                "body": "",
-                "body_type": "plain",
-                "attachments": [],
-                "custom_headers": {},
-            }
+def test_smtp_config_port_invalid_type():
+    with pytest.raises(TypeError):
+        SMTPConfig(
+            server="smtp.example.com",
+            port="587",
+            username="user@example.com",
+            password="password",
         )
-        self.assertEqual(str(self.builder), expected_str)
 
 
-class TestSMTPConfig(unittest.TestCase):
+def test_smtp_config_port_invalid_value():
+    with pytest.raises(ValueError):
+        SMTPConfig(
+            server="smtp.example.com",
+            port=70000,
+            username="user@example.com",
+            password="password",
+        )
 
-    def setUp(self):
-        """Setup an SMTPConfig instance for testing."""
-        self.config = SMTPConfig(
+
+def test_smtp_config_username_invalid_type():
+    with pytest.raises(TypeError):
+        SMTPConfig(
             server="smtp.example.com",
             port=587,
-            username="user",
-            password="pass",
-            use_tls=False,
-            use_ssl=False,
-            timeout=30,
+            username=123,
+            password="password",
         )
 
-    def test_initialization(self):
-        """Test initialization of the SMTPConfig class."""
-        self.assertEqual(self.config.server, "smtp.example.com")
-        self.assertEqual(self.config.port, 587)
-        self.assertEqual(self.config.username, "user")
-        self.assertEqual(self.config.password, "pass")
-        self.assertIsInstance(self.config.use_ssl, bool)
-        self.assertIsInstance(self.config.use_tls, bool)
-        self.assertEqual(self.config.timeout, 30)
 
-    def test_server_setter(self):
-        """Test setting a valid server address."""
-        with self.assertRaises(TypeError):
-            self.config.server = 123
-
-        with self.assertRaises(ValueError):
-            self.config.server = ""
-
-        self.config.server = "new.smtp.example.com"
-        self.assertEqual(self.config.server, "new.smtp.example.com")
-
-    def test_port_setter(self):
-        """Test setting a valid port."""
-        with self.assertRaises(TypeError):
-            self.config.port = "not_an_int"
-
-        with self.assertRaises(ValueError):
-            self.config.port = 70000
-
-        self.config.port = 465
-        self.assertEqual(self.config.port, 465)
-
-    def test_username_setter(self):
-        """Test setting a valid username."""
-        with self.assertRaises(TypeError):
-            self.config.username = 123
-
-        with self.assertRaises(ValueError):
-            self.config.username = ""
-
-        self.config.username = "new_user"
-        self.assertEqual(self.config.username, "new_user")
-
-    def test_password_setter(self):
-        """Test setting a valid password."""
-        with self.assertRaises(TypeError):
-            self.config.password = 123
-
-        self.config.password = "new_pass"
-        self.assertEqual(self.config.password, "new_pass")
-
-    def test_use_tls_setter(self):
-        """Test setting a valid use_tls value."""
-        with self.assertRaises(TypeError):
-            self.config.use_tls = "not_a_bool"
-
-        self.config.use_tls = False
-        self.assertFalse(self.config.use_tls)
-
-    def test_use_ssl_setter(self):
-        """Test setting a valid use_ssl value."""
-        with self.assertRaises(TypeError):
-            self.config.use_ssl = "not_a_bool"
-
-        self.config.use_ssl = True
-        self.assertTrue(self.config.use_ssl)
-
-    def test_timeout_setter(self):
-        """Test setting a valid timeout value."""
-        with self.assertRaises(TypeError):
-            self.config.timeout = "not_an_int"
-
-        with self.assertRaises(ValueError):
-            self.config.timeout = -1
-
-        self.config.timeout = 60
-        self.assertEqual(self.config.timeout, 60)
-
-    def test_str_method(self):
-        """Test the __str__ method of the SMTPConfig class."""
-        expected_str = str(
-            {
-                "server": "smtp.example.com",
-                "port": 587,
-                "username": "user",
-                "password": "pass",
-                "use_tls": False,
-                "use_ssl": False,
-                "timeout": 30,
-            }
-        )
-        self.assertEqual(str(self.config), expected_str)
-
-
-class TestEmailSender(unittest.TestCase):
-
-    def setUp(self):
-        """Setup an SMTPConfig and EmailSender instance for testing."""
-        self.smtp_config = SMTPConfig(
+def test_smtp_config_username_empty_string():
+    with pytest.raises(ValueError):
+        SMTPConfig(
             server="smtp.example.com",
             port=587,
-            username="user",
-            password="pass",
-            use_tls=False,
-            use_ssl=False,
-            timeout=30,
-        )
-        self.email_sender = EmailSender(self.smtp_config)
-        self.email_message = (
-            EmailMessageBuilder("test@example.com", ["recipient@example.com"])
-            .with_subject("Test Subject")
-            .with_body("Test Body", "plain")
-            .build()
+            username="",
+            password="password",
         )
 
-    def test_initialization(self):
-        """Test initialization of the EmailSender class."""
-        self.assertEqual(self.email_sender.smtp_config, self.smtp_config)
 
-    @patch("services.smtp_delivery.smtplib.SMTP")
-    @patch("services.smtp_delivery.smtplib.SMTP_SSL")
-    def test_send_email_with_ssl(self, mock_smtp_ssl, mock_smtp):
-        """Test sending an email with SSL enabled."""
-        self.smtp_config.use_ssl = True
-        self.email_sender.send(self.email_message)
-        mock_smtp_ssl.assert_called_once_with(
-            self.smtp_config.server,
-            self.smtp_config.port,
-            timeout=self.smtp_config.timeout,
+def test_smtp_config_password_invalid_type():
+    with pytest.raises(TypeError):
+        SMTPConfig(
+            server="smtp.example.com",
+            port=587,
+            username="user@example.com",
+            password=123,
         )
-        mock_smtp_ssl.return_value.login.assert_called_once_with(
-            self.smtp_config.username,
-            self.smtp_config.password,
-        )
-        mock_smtp_ssl.return_value.sendmail.assert_called_once_with(
-            self.email_message["From"],
-            self.email_message["To"].split(", "),
-            self.email_message.as_string(),
-        )
-        mock_smtp_ssl.return_value.quit.assert_called_once()
-
-    @patch("services.smtp_delivery.smtplib.SMTP")
-    @patch("services.smtp_delivery.smtplib.SMTP_SSL")
-    def test_send_email_with_tls(self, mock_smtp_ssl, mock_smtp):
-        """Test sending an email with TLS enabled."""
-        self.smtp_config.use_tls = True
-        self.email_sender.send(self.email_message)
-        mock_smtp.assert_called_once_with(
-            self.smtp_config.server,
-            self.smtp_config.port,
-            timeout=self.smtp_config.timeout,
-        )
-        mock_smtp.return_value.starttls.assert_called_once()
-        mock_smtp.return_value.login.assert_called_once_with(
-            self.smtp_config.username,
-            self.smtp_config.password,
-        )
-        mock_smtp.return_value.sendmail.assert_called_once_with(
-            self.email_message["From"],
-            self.email_message["To"].split(", "),
-            self.email_message.as_string(),
-        )
-        mock_smtp.return_value.quit.assert_called_once()
-
-    @patch("services.smtp_delivery.smtplib.SMTP")
-    @patch("services.smtp_delivery.smtplib.SMTP_SSL")
-    def test_send_email_without_ssl_tls(self, mock_smtp_ssl, mock_smtp):
-        """Test sending an email without SSL/TLS."""
-        self.email_sender.send(self.email_message)
-        mock_smtp.assert_called_once_with(
-            self.smtp_config.server,
-            self.smtp_config.port,
-            timeout=self.smtp_config.timeout,
-        )
-        mock_smtp.return_value.login.assert_called_once_with(
-            self.smtp_config.username,
-            self.smtp_config.password,
-        )
-        mock_smtp.return_value.sendmail.assert_called_once_with(
-            self.email_message["From"],
-            self.email_message["To"].split(", "),
-            self.email_message.as_string(),
-        )
-        mock_smtp.return_value.quit.assert_called_once()
-
-    def test_str_method(self):
-        """Test the __str__ method of the EmailSender class."""
-        expected_str = str({"smtp_config": str(self.smtp_config)})
-        self.assertEqual(str(self.email_sender), expected_str)
 
 
-if __name__ == "__main__":
-    unittest.main()
+def test_smtp_config_use_tls_invalid_type():
+    with pytest.raises(TypeError):
+        SMTPConfig(
+            server="smtp.example.com",
+            port=587,
+            username="user@example.com",
+            password="password",
+            use_tls="True",
+        )
+
+
+def test_smtp_config_use_ssl_invalid_type():
+    with pytest.raises(TypeError):
+        SMTPConfig(
+            server="smtp.example.com",
+            port=587,
+            username="user@example.com",
+            password="password",
+            use_ssl="False",
+        )
+
+
+def test_smtp_config_timeout_invalid_type():
+    with pytest.raises(TypeError):
+        SMTPConfig(
+            server="smtp.example.com",
+            port=587,
+            username="user@example.com",
+            password="password",
+            timeout="10",
+        )
+
+
+def test_smtp_config_timeout_invalid_value():
+    with pytest.raises(ValueError):
+        SMTPConfig(
+            server="smtp.example.com",
+            port=587,
+            username="user@example.com",
+            password="password",
+            timeout=-5,
+        )
+
+
+# ============== Tests for EmailMessageBuilder ==============
+
+
+def test_email_message_builder_valid(email_builder):
+    assert email_builder.from_address == "sender@example.com"
+    assert email_builder.to_addresses == ["recipient@example.com"]
+    assert email_builder.cc_addresses == []
+    assert email_builder.subject == ""
+    assert email_builder.body == ""
+    assert email_builder.body_type == "plain"
+    assert email_builder.attachments == []
+    assert email_builder.custom_headers == {}
+
+
+def test_add_recipient(email_builder):
+    email_builder.add_recipient("another@example.com")
+    assert email_builder.to_addresses == [
+        "recipient@example.com",
+        "another@example.com",
+    ]
+
+
+def test_add_recipient_invalid(email_builder):
+    with pytest.raises(TypeError):
+        email_builder.add_recipient(123)
+
+    with pytest.raises(ValueError):
+        email_builder.add_recipient("")
+
+
+def test_add_cc(email_builder):
+    email_builder.add_cc("cc@example.com")
+    assert email_builder.cc_addresses == ["cc@example.com"]
+
+
+def test_add_cc_invalid(email_builder):
+    with pytest.raises(TypeError):
+        email_builder.add_cc(123)
+
+    with pytest.raises(ValueError):
+        email_builder.add_cc("")
+
+
+def test_with_subject(email_builder):
+    email_builder.with_subject("Test Subject")
+    assert email_builder.subject == "Test Subject"
+
+
+def test_with_body(email_builder):
+    email_builder.with_body("This is the body.", body_type="html")
+    assert email_builder.body == "This is the body."
+    assert email_builder.body_type == "html"
+
+
+def test_with_body_path(monkeypatch, email_builder):
+    monkeypatch.setattr(os.path, "exists", lambda path: True)
+
+    class MockFile:
+        def read(self):
+            return "Hello, {name}!"
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, exc_type, exc_value, traceback):
+            pass
+
+    def mock_open(*args, **kwargs):
+        return MockFile()
+
+    monkeypatch.setattr("builtins.open", mock_open)
+
+    email_builder.with_body_path(
+        "path/to/body.txt",
+        body_type="plain",
+        replacements={"name": "foo"},
+    )
+
+    assert email_builder.body == "Hello, foo!"
+    assert email_builder.body_type == "plain"
+
+
+def test_with_body_path_invalid(email_builder):
+    with pytest.raises(TypeError):
+        email_builder.with_body_path(123)
+
+    with pytest.raises(ValueError):
+        email_builder.with_body_path("")
+
+
+def test_add_attachment(email_builder):
+    attachment = MIMEText("Attachment content")
+    email_builder.add_attachment(attachment, filename="test.txt")
+    assert len(email_builder.attachments) == 1
+    assert email_builder.attachments[0][0] == attachment
+    assert email_builder.attachments[0][1] == "test.txt"
+
+
+def test_add_attachment_invalid(email_builder):
+    with pytest.raises(TypeError):
+        email_builder.add_attachment(123)
+
+    with pytest.raises(ValueError):
+        email_builder.add_attachment(MIMEText("Attachment content"), filename="   ")
+
+
+def test_add_attachment_from_path(monkeypatch, email_builder):
+    def mock_exists(path):
+        return True
+
+    def mock_open(*args, **kwargs):
+        class MockFile:
+            def read(self):
+                return b"File content"
+
+            def __enter__(self):
+                return self
+
+            def __exit__(self, *args):
+                pass
+
+        return MockFile()
+
+    monkeypatch.setattr(os.path, "exists", mock_exists)
+    monkeypatch.setattr("builtins.open", mock_open)
+
+    email_builder.add_attachment_from_path("path/to/file.txt", filename="file.txt")
+
+    assert len(email_builder.attachments) == 1
+    attachment, filename = email_builder.attachments[0]
+    assert filename == "file.txt"
+    assert isinstance(attachment, MIMEApplication)
+
+
+def test_add_custom_header(email_builder):
+    email_builder.add_custom_header("X-Custom-Header", "HeaderValue")
+    assert email_builder.custom_headers == {"X-Custom-Header": "HeaderValue"}
+
+
+def test_add_custom_header_invalid(email_builder):
+    with pytest.raises(TypeError):
+        email_builder.add_custom_header(123, "value")
+
+    with pytest.raises(ValueError):
+        email_builder.add_custom_header("X-Header", "")
+
+    with pytest.raises(TypeError):
+        email_builder.add_custom_header("X-Header", 456)
+
+
+def test_build(email_builder):
+    email_builder.with_subject("Test Subject")
+    email_builder.with_body("Test Body")
+    email_message = email_builder.build()
+
+    assert isinstance(email_message, MIMEMultipart)
+    assert email_message["From"] == "sender@example.com"
+    assert email_message["To"] == "recipient@example.com"
+    assert email_message["Subject"] == "Test Subject"
+
+    payload = email_message.get_payload()
+    assert len(payload) == 1
+    assert payload[0].get_payload() == "Test Body"
+
+
+def test_email_builder_from_address_invalid():
+    with pytest.raises(TypeError):
+        EmailMessageBuilder(
+            from_address=123,
+            to_addresses=["recipient@example.com"],
+        )
+
+    with pytest.raises(ValueError):
+        EmailMessageBuilder(
+            from_address="",
+            to_addresses=["recipient@example.com"],
+        )
+
+
+def test_email_builder_to_addresses_invalid_type():
+    with pytest.raises(TypeError):
+        EmailMessageBuilder(
+            from_address="sender@example.com",
+            to_addresses="recipient@example.com",
+        )
+
+
+def test_email_builder_to_addresses_empty():
+    with pytest.raises(ValueError):
+        EmailMessageBuilder(
+            from_address="sender@example.com",
+            to_addresses=[],
+        )
+
+
+def test_email_builder_to_addresses_invalid_values():
+    with pytest.raises(TypeError):
+        EmailMessageBuilder(
+            from_address="sender@example.com",
+            to_addresses=["recipient@example.com", 123],
+        )
+
+    with pytest.raises(ValueError):
+        EmailMessageBuilder(
+            from_address="sender@example.com",
+            to_addresses=["recipient@example.com", ""],
+        )
+
+
+# ============== Tests for EmailSender ==============
+
+
+def test_email_sender_send_tls(monkeypatch, smtp_config):
+    smtp_config.use_ssl = False
+    smtp_config.use_tls = True
+
+    instances = []
+
+    class MockSMTP:
+        def __init__(self, server, port, timeout=None):
+            self.server = server
+            self.port = port
+            self.timeout = timeout
+            self.starttls_called = False
+            self.login_called_with = None
+            self.sendmail_called_with = None
+            self.quit_called = False
+            instances.append(self)
+
+        def starttls(self):
+            self.starttls_called = True
+
+        def login(self, username, password):
+            self.login_called_with = (username, password)
+
+        def sendmail(self, from_addr, to_addrs, msg):
+            self.sendmail_called_with = (from_addr, to_addrs, msg)
+
+        def quit(self):
+            self.quit_called = True
+
+    monkeypatch.setattr(smtplib, "SMTP", MockSMTP)
+
+    email_message = MIMEMultipart()
+    email_message["From"] = "sender@example.com"
+    email_message["To"] = "recipient@example.com"
+    email_message["Subject"] = "Test"
+
+    email_sender = EmailSender(smtp_config)
+    email_sender.send(email_message)
+
+    mock_smtp_instance = instances[0]
+
+    assert mock_smtp_instance.server == smtp_config.server
+    assert mock_smtp_instance.port == smtp_config.port
+    assert mock_smtp_instance.timeout == smtp_config.timeout
+    assert mock_smtp_instance.starttls_called is True
+    assert mock_smtp_instance.login_called_with == (
+        smtp_config.username,
+        smtp_config.password,
+    )
+    assert mock_smtp_instance.sendmail_called_with == (
+        "sender@example.com",
+        ["recipient@example.com"],
+        email_message.as_string(),
+    )
+    assert mock_smtp_instance.quit_called is True
+
+
+def test_email_sender_send_ssl(monkeypatch, smtp_config):
+    smtp_config.use_ssl = True
+    smtp_config.use_tls = False
+
+    instances = []
+
+    class MockSMTP_SSL:
+        def __init__(self, server, port, timeout=None):
+            self.server = server
+            self.port = port
+            self.timeout = timeout
+            self.login_called_with = None
+            self.sendmail_called_with = None
+            self.quit_called = False
+            instances.append(self)
+
+        def login(self, username, password):
+            self.login_called_with = (username, password)
+
+        def sendmail(self, from_addr, to_addrs, msg):
+            self.sendmail_called_with = (from_addr, to_addrs, msg)
+
+        def quit(self):
+            self.quit_called = True
+
+    monkeypatch.setattr(smtplib, "SMTP_SSL", MockSMTP_SSL)
+
+    email_message = MIMEMultipart()
+    email_message["From"] = "sender@example.com"
+    email_message["To"] = "recipient@example.com"
+    email_message["Subject"] = "Test"
+
+    email_sender = EmailSender(smtp_config)
+    email_sender.send(email_message)
+
+    mock_smtp_instance = instances[0]
+
+    assert mock_smtp_instance.server == smtp_config.server
+    assert mock_smtp_instance.port == smtp_config.port
+    assert mock_smtp_instance.timeout == smtp_config.timeout
+    assert mock_smtp_instance.login_called_with == (
+        smtp_config.username,
+        smtp_config.password,
+    )
+    assert mock_smtp_instance.sendmail_called_with == (
+        "sender@example.com",
+        ["recipient@example.com"],
+        email_message.as_string(),
+    )
+    assert mock_smtp_instance.quit_called is True
+
+
+def test_email_sender_send_plain(monkeypatch, smtp_config):
+    smtp_config.use_ssl = False
+    smtp_config.use_tls = False
+
+    instances = []
+
+    class MockSMTP:
+        def __init__(self, server, port, timeout=None):
+            self.server = server
+            self.port = port
+            self.timeout = timeout
+            self.starttls_called = False
+            self.login_called_with = None
+            self.sendmail_called_with = None
+            self.quit_called = False
+            instances.append(self)
+
+        def login(self, username, password):
+            self.login_called_with = (username, password)
+
+        def sendmail(self, from_addr, to_addrs, msg):
+            self.sendmail_called_with = (from_addr, to_addrs, msg)
+
+        def quit(self):
+            self.quit_called = True
+
+    monkeypatch.setattr(smtplib, "SMTP", MockSMTP)
+
+    email_message = MIMEMultipart()
+    email_message["From"] = "sender@example.com"
+    email_message["To"] = "recipient@example.com"
+    email_message["Subject"] = "Test"
+
+    email_sender = EmailSender(smtp_config)
+    email_sender.send(email_message)
+
+    mock_smtp_instance = instances[0]
+
+    assert mock_smtp_instance.server == smtp_config.server
+    assert mock_smtp_instance.port == smtp_config.port
+    assert mock_smtp_instance.timeout == smtp_config.timeout
+    assert mock_smtp_instance.login_called_with == (
+        smtp_config.username,
+        smtp_config.password,
+    )
+    assert mock_smtp_instance.sendmail_called_with == (
+        "sender@example.com",
+        ["recipient@example.com"],
+        email_message.as_string(),
+    )
+    assert mock_smtp_instance.quit_called is True
+
+
+def test_email_sender_send_multiple_recipients(monkeypatch, smtp_config):
+    smtp_config.use_tls = True
+    instances = []
+
+    class MockSMTP:
+        def __init__(self, server, port, timeout=None):
+            self.server = server
+            self.port = port
+            self.timeout = timeout
+            self.login_called_with = None
+            self.sendmail_called_with = None
+            self.quit_called = False
+            self.starttls_called = False
+            instances.append(self)
+
+        def starttls(self):
+            self.starttls_called = True
+
+        def login(self, username, password):
+            self.login_called_with = (username, password)
+
+        def sendmail(self, from_addr, to_addrs, msg):
+            self.sendmail_called_with = (from_addr, to_addrs, msg)
+
+        def quit(self):
+            self.quit_called = True
+
+    monkeypatch.setattr(smtplib, "SMTP", MockSMTP)
+
+    email_builder = EmailMessageBuilder(
+        from_address="sender@example.com",
+        to_addresses=["recipient1@example.com", "recipient2@example.com"],
+    )
+    email_builder.add_cc("cc@example.com")
+    email_builder.with_subject("Test Subject")
+    email_builder.with_body("Test Body")
+
+    email_message = email_builder.build()
+    email_sender = EmailSender(smtp_config)
+    email_sender.send(email_message)
+
+    expected_recipients = [
+        "recipient1@example.com",
+        "recipient2@example.com",
+        "cc@example.com",
+    ]
+
+    mock_smtp_instance = instances[0]
+
+    assert mock_smtp_instance.starttls_called is True
+    assert mock_smtp_instance.login_called_with == (
+        smtp_config.username,
+        smtp_config.password,
+    )
+    assert mock_smtp_instance.sendmail_called_with == (
+        "sender@example.com",
+        expected_recipients,
+        email_message.as_string(),
+    )
+    assert mock_smtp_instance.quit_called is True
+
+
+def test_email_sender_send_exception(monkeypatch, smtp_config):
+    class MockSMTP:
+        def __init__(self, server, port, timeout=None):
+            pass
+
+        def starttls(self):
+            pass
+
+        def login(self, username, password):
+            pass
+
+        def sendmail(self, from_addr, to_addrs, msg):
+            raise smtplib.SMTPException("Sending failed")
+
+        def quit(self):
+            pass
+
+    smtp_config.use_tls = True
+    smtp_config.use_ssl = False
+
+    monkeypatch.setattr(smtplib, "SMTP", MockSMTP)
+
+    email_message = MIMEMultipart()
+    email_message["From"] = "sender@example.com"
+    email_message["To"] = "recipient@example.com"
+    email_message["Subject"] = "Test"
+
+    email_sender = EmailSender(smtp_config)
+
+    with pytest.raises(smtplib.SMTPException) as exc_info:
+        email_sender.send(email_message)
+
+    assert str(exc_info.value) == "Sending failed"
+
+
+# ============== Extras ==============
+
+
+def test_add_attachment_invalid_filename(email_builder):
+    attachment = MIMEText("Attachment content")
+
+    with pytest.raises(TypeError):
+        email_builder.add_attachment(attachment, filename=123)
+
+    with pytest.raises(ValueError):
+        email_builder.add_attachment(attachment, filename="   ")
+
+
+def test_add_attachment_from_nonexistent_path(monkeypatch, email_builder):
+    def mock_exists(path):
+        return False
+
+    monkeypatch.setattr(os.path, "exists", mock_exists)
+
+    with pytest.raises(FileNotFoundError):
+        email_builder.add_attachment_from_path("nonexistent/path.txt")
+
+
+def test_add_custom_header_invalid(email_builder):
+    with pytest.raises(TypeError):
+        email_builder.add_custom_header(123, "value")
+
+    with pytest.raises(ValueError):
+        email_builder.add_custom_header("X-Header", "")
+
+    with pytest.raises(TypeError):
+        email_builder.add_custom_header("X-Header", 456)

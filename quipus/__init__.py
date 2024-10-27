@@ -30,6 +30,7 @@ from .models import Certificate, CertificateFactory, Template
 from .services import (
     EmailMessageBuilder,
     EmailSender,
+    AWSConfig,
     S3Delivery,
     SFTPDelivery,
     SMTPConfig,
@@ -46,6 +47,7 @@ __all__ = [
     "Template",
     "EmailMessageBuilder",
     "EmailSender",
+    "AWSConfig",
     "S3Delivery",
     "SFTPDelivery",
     "SMTPConfig",
