@@ -1,5 +1,5 @@
 <p align="center">
-    <a href="https://pypi.org/project/quipus"><img src="https://i.imgur.com/D0kpams.png"></a>
+    <a href="https://pypi.org/project/quipus"><img src="https://i.imgur.com/uSUvgP9.png"></a>
     <em>Quipus, data retrieval, template manager and delivery all in one!</em>
 </p>
 <p align="center">
