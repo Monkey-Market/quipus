@@ -1025,8 +1025,9 @@ class EmailSender:
         to_addrs = []
         for header in ["To", "Cc"]:
             addresses = email_message.get_all(header, [])
-            for addr in addresses[0].split(","):
-                to_addrs.append(addr.strip())
+            if addresses:
+                for addr in addresses[0].split(","):
+                    to_addrs.append(addr.strip())
 
         server.sendmail(
             email_message["From"],
