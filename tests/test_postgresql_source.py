@@ -5,7 +5,6 @@ from quipus import PostgreSQLDataSource
 
 @pytest.fixture
 def postgresql_data_source():
-    """Fixture para crear una instancia de PostgreSQLDataSource con parámetros básicos."""
     return PostgreSQLDataSource(
         host="localhost",
         database="test_db",
@@ -19,7 +18,6 @@ def postgresql_data_source():
 
 @pytest.fixture
 def mocked_connection_pool(monkeypatch, postgresql_data_source):
-    """Fixture para mockear el pool de conexiones y el cursor."""
 
     class MockCursor:
         def execute(self, query):
