@@ -9,6 +9,9 @@
     <a href="https://pypi.org/project/quipus" target="_blank">
         <img src="https://img.shields.io/pypi/pyversions/quipus.svg?color=%2334D058" alt="Supported Python versions">
     </a>
+    <a href="https://github.com/Monkey-Market/quipus/actions/workflows/pytest.yml">
+        <img src="https://github.com/Monkey-Market/quipus/actions/workflows/pytest.yml/badge.svg" alt="Pytest Check">
+    </a>
     <a href="https://github.com/Monkey-Market/quipus/actions/workflows/pylint.yml">
         <img src="https://github.com/Monkey-Market/quipus/actions/workflows/pylint.yml/badge.svg" alt="Pylint">
     </a>
