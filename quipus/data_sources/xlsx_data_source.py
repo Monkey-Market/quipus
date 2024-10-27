@@ -116,7 +116,10 @@ class XLSXDataSource:
         if self.dataframe is None:
             raise RuntimeError("No data loaded from the Excel file.")
 
-        return self.dataframe.query(query)
+        try:
+            return self.dataframe.query(query)
+        except Exception:
+            raise ValueError("Invalid query provided.")
 
     def __str__(self) -> str:
         """
