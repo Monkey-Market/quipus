@@ -179,9 +179,25 @@ def test_add_recipient(email_builder):
     ]
 
 
+def test_add_recipient_invalid(email_builder):
+    with pytest.raises(TypeError):
+        email_builder.add_recipient(123)
+
+    with pytest.raises(ValueError):
+        email_builder.add_recipient("")
+
+
 def test_add_cc(email_builder):
     email_builder.add_cc("cc@example.com")
     assert email_builder.cc_addresses == ["cc@example.com"]
+
+
+def test_add_cc_invalid(email_builder):
+    with pytest.raises(TypeError):
+        email_builder.add_cc(123)
+
+    with pytest.raises(ValueError):
+        email_builder.add_cc("")
 
 
 def test_with_subject(email_builder):
@@ -223,12 +239,28 @@ def test_with_body_path(monkeypatch, email_builder):
     assert email_builder.body_type == "plain"
 
 
+def test_with_body_path_invalid(email_builder):
+    with pytest.raises(TypeError):
+        email_builder.with_body_path(123)
+
+    with pytest.raises(ValueError):
+        email_builder.with_body_path("")
+
+
 def test_add_attachment(email_builder):
     attachment = MIMEText("Attachment content")
     email_builder.add_attachment(attachment, filename="test.txt")
     assert len(email_builder.attachments) == 1
     assert email_builder.attachments[0][0] == attachment
     assert email_builder.attachments[0][1] == "test.txt"
+
+
+def test_add_attachment_invalid(email_builder):
+    with pytest.raises(TypeError):
+        email_builder.add_attachment(123)
+
+    with pytest.raises(ValueError):
+        email_builder.add_attachment(MIMEText("Attachment content"), filename="   ")
 
 
 def test_add_attachment_from_path(monkeypatch, email_builder):
@@ -262,6 +294,17 @@ def test_add_attachment_from_path(monkeypatch, email_builder):
 def test_add_custom_header(email_builder):
     email_builder.add_custom_header("X-Custom-Header", "HeaderValue")
     assert email_builder.custom_headers == {"X-Custom-Header": "HeaderValue"}
+
+
+def test_add_custom_header_invalid(email_builder):
+    with pytest.raises(TypeError):
+        email_builder.add_custom_header(123, "value")
+
+    with pytest.raises(ValueError):
+        email_builder.add_custom_header("X-Header", "")
+
+    with pytest.raises(TypeError):
+        email_builder.add_custom_header("X-Header", 456)
 
 
 def test_build(email_builder):
