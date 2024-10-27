@@ -1,0 +1,36 @@
+name: Pylint Check
+
+on:
+  pull_request:
+    branches:
+      - main
+    types: [opened, closed, edited, reopened]
+  workflow_dispatch:
+
+jobs:
+  pylint:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12'
+
+      - name: Install and configure poetry
+        shell: bash
+        run: |
+          pip install poetry
+          poetry config virtualenvs.create false
+          poetry install
+
+      - name: Install pytest
+        run: pip install pytest
+
+      - name: Run pytest
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          pytest tests/
