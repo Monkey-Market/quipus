@@ -122,7 +122,7 @@ This is a simple example of how you can use Quipus to fetch data from a CSV file
 
 ## Contributing
 
-Contributions are welcome! Please read our [contributing guidelines](CONTRIBUTING.md) for more information.
+Contributions are welcome! Please read our [contributing guidelines](https://github.com/Monkey-Market/quipus/blob/main/CONTRIBUTING.md) for more information.
 
 You can always open an issue or submit a pull request if you have any suggestions or improvements.
 
@@ -164,4 +164,4 @@ You can read more about it in [this](https://en.wikipedia.org/wiki/Quipu) wikipe
 
 ## License
 
-This project is licensed under the terms of the [GNU General Public License v3.0](LICENSE).
+This project is licensed under the terms of the [GNU General Public License v3.0](https://github.com/Monkey-Market/quipus/blob/main/LICENSE).
