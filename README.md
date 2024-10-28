@@ -33,8 +33,6 @@
     <img src="https://img.shields.io/github/stars/monkey-market/quipus?style=social" alt="GitHub stars">
 </p>
 
-[quipus]: https://github.com/monkey-market/quipus
-
 
 ---
 
@@ -153,6 +151,14 @@ You can always open an issue or submit a pull request if you have any suggestion
     </td>
   </tr>
 </table>
+
+## Trivia 🪢
+
+The name "*Quipus*" comes from the Quechua word "*khipu*" which refers to a method used by the Incas to keep records and communicate information through a system of knots and strings.
+
+We thought it was a fitting name for a package that helps you manage and deliver data in a structured and organized way.
+
+You can read more about it in [this](https://en.wikipedia.org/wiki/Quipu) wikipedia page.
 
 ---
 
