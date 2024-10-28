@@ -1,7 +1,11 @@
 <p align="center">
     <a href="https://pypi.org/project/quipus"><img src="https://i.imgur.com/uSUvgP9.png"></a>
-    <em>Quipus, data retrieval, template manager and delivery all in one!</em>
 </p>
+
+<p align="center">
+  <em>Quipus, data retrieval, template manager and delivery all in one!</em>
+</p>
+
 <p align="center">
     <a href="https://pypi.org/project/quipus" target="_blank">
         <img src="https://img.shields.io/pypi/v/quipus?color=%2334D058&label=pypi%20package" alt="Package version">
@@ -9,6 +13,15 @@
     <a href="https://pypi.org/project/quipus" target="_blank">
         <img src="https://img.shields.io/pypi/pyversions/quipus.svg?color=%2334D058" alt="Supported Python versions">
     </a>
+    <a href="https://github.com/Monkey-Market/quipus/issues" target="_blank">
+      <img src="https://img.shields.io/github/issues/monkey-market/quipus" alt="GitHub issues">
+    </a>
+    <a href="https://github.com/Monkey-Market/quipus/pulls" target="_blank">
+      <img src="https://img.shields.io/github/issues-pr/monkey-market/quipus" alt="GitHub pull requests">
+    </a>
+</p>
+
+<p align="center">
     <a href="https://github.com/Monkey-Market/quipus/actions/workflows/pytest.yml">
         <img src="https://github.com/Monkey-Market/quipus/actions/workflows/pytest.yml/badge.svg" alt="Pytest Check">
     </a>
@@ -16,6 +29,12 @@
         <img src="https://github.com/Monkey-Market/quipus/actions/workflows/pylint.yml/badge.svg" alt="Pylint">
     </a>
 </p>
+<p align="center">
+    <img src="https://img.shields.io/github/stars/monkey-market/quipus?style=social" alt="GitHub stars">
+</p>
+
+[quipus]: https://github.com/monkey-market/quipus
+
 
 ---
 
