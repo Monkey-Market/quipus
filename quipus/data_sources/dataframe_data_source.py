@@ -1,50 +1,50 @@
 from typing import List
 
-import pandas as pd
+import polars as pl
 
 
 class DataFrameDataSource:
     """
-    Pandas DataFrame DataSource to manage data retrieval from DataFrames.
+    polars DataFrame DataSource to manage data retrieval from DataFrames.
 
     Attributes:
-        dataframe (pd.DataFrame): DataFrame containing the data.
+        dataframe (pl.DataFrame): DataFrame containing the data.
     """
 
-    def __init__(self, dataframe: pd.DataFrame):
+    def __init__(self, dataframe: pl.DataFrame):
         self.dataframe = dataframe
 
     @property
-    def dataframe(self) -> pd.DataFrame:
+    def dataframe(self) -> pl.DataFrame:
         """
         Get the DataFrame containing the data.
 
         Returns:
-            pd.DataFrame: DataFrame containing the data.
+            pl.DataFrame: DataFrame containing the data.
         """
         return self.__dataframe
 
     @dataframe.setter
-    def dataframe(self, dataframe: pd.DataFrame) -> None:
+    def dataframe(self, dataframe: pl.DataFrame) -> None:
         """
         Set the DataFrame containing the data.
 
         Args:
-            dataframe (pd.DataFrame): DataFrame containing the data.
+            dataframe (pl.DataFrame): DataFrame containing the data.
 
         Raises:
-            TypeError: If 'dataframe' is not a pandas DataFrame.
+            TypeError: If 'dataframe' is not a polars DataFrame.
         """
-        if not isinstance(dataframe, pd.DataFrame):
-            raise TypeError("'dataframe' must be a pandas DataFrame.")
+        if not isinstance(dataframe, pl.DataFrame):
+            raise TypeError("'dataframe' must be a polars DataFrame.")
         self.__dataframe = dataframe
 
-    def fetch_data(self) -> pd.DataFrame:
+    def fetch_data(self) -> pl.DataFrame:
         """
         Fetch data from the DataFrame.
 
         Returns:
-            pd.DataFrame: DataFrame containing the data.
+            pl.DataFrame: DataFrame containing the data.
         """
         if self.dataframe is None:
             raise RuntimeError("No data loaded in the DataFrame.")
@@ -61,7 +61,7 @@ class DataFrameDataSource:
             raise RuntimeError("No data loaded in the DataFrame.")
         return list(self.dataframe.columns)
 
-    def filter_data(self, query: str) -> pd.DataFrame:
+    def filter_data(self, query: str) -> pl.DataFrame:
         """
         Filter the data in the DataFrame using a query.
 
@@ -69,7 +69,7 @@ class DataFrameDataSource:
             query (str): Query to filter the data.
 
         Returns:
-            pd.DataFrame: Filtered DataFrame.
+            pl.DataFrame: Filtered DataFrame.
 
         Raises:
             RuntimeError: If no data is loaded in the DataFrame.
@@ -86,7 +86,7 @@ class DataFrameDataSource:
         if query.strip() == "":
             raise ValueError("Query cannot be an empty string.")
 
-        return self.dataframe.query(query)
+        return self.dataframe.sql(query)
 
     def __str__(self) -> str:
         """

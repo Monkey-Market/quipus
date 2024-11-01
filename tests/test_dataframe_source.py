@@ -1,4 +1,5 @@
 import pytest
+import polars as pl
 import pandas as pd
 
 from quipus.data_sources.dataframe_data_source import DataFrameDataSource
@@ -6,7 +7,7 @@ from quipus.data_sources.dataframe_data_source import DataFrameDataSource
 
 @pytest.fixture
 def sample_dataframe():
-    return pd.DataFrame(
+    return pl.DataFrame(
         {
             "A": [1, 2, 3, 4],
             "B": [10, 20, 30, 40],
@@ -22,12 +23,12 @@ def dataframe_source(sample_dataframe):
 
 @pytest.fixture
 def dataframe_source_empty():
-    return DataFrameDataSource(pd.DataFrame())
+    return DataFrameDataSource(pl.DataFrame())
 
 
 def test_fetch_data(dataframe_source, sample_dataframe):
     fetched_data = dataframe_source.fetch_data()
-    pd.testing.assert_frame_equal(fetched_data, sample_dataframe)
+    fetched_data.equals(sample_dataframe)
 
 
 def test_get_columns(dataframe_source):
@@ -35,8 +36,8 @@ def test_get_columns(dataframe_source):
 
 
 def test_filter_data(dataframe_source):
-    filtered_data = dataframe_source.filter_data("A > 2")
-    expected_filtered_data = pd.DataFrame(
+    filtered_data = dataframe_source.filter_data("SELECT * FROM self WHERE A > 2")
+    expected_filtered_data = pl.DataFrame(
         {
             "A": [3, 4],
             "B": [30, 40],
@@ -44,9 +45,7 @@ def test_filter_data(dataframe_source):
         }
     )
 
-    pd.testing.assert_frame_equal(
-        filtered_data.reset_index(drop=True), expected_filtered_data
-    )
+    filtered_data.equals(expected_filtered_data)
 
 
 def test_filter_data_invalid_query(dataframe_source):
