@@ -1,21 +1,19 @@
 import pytest
-import pandas as pd
+import polars as pl
 
 from quipus import CertificateFactory, Certificate
 
 
 @pytest.fixture
 def sample_row():
-    return pd.Series(
-        {
-            "completion_date": "2024-10-27",
-            "content": "Test content 1",
-            "entity": "Test entity 1",
-            "name": "Test name 1",
-            "duration": "Test duration 1",
-            "validity_checker": "https://example.com/check",
-        }
-    )
+    return {
+        "completion_date": "2024-10-27",
+        "content": "Test content 1",
+        "entity": "Test entity 1",
+        "name": "Test name 1",
+        "duration": "Test duration 1",
+        "validity_checker": "https://example.com/check",
+    }
 
 
 @pytest.fixture
@@ -31,7 +29,7 @@ def sample_dataframe():
             "https://example.com/check2",
         ],
     }
-    return pd.DataFrame(data)
+    return pl.DataFrame(data)
 
 
 def test_create_one_certificate(sample_row):

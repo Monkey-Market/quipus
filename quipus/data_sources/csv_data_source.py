@@ -1,6 +1,7 @@
-from typing import Optional, List
+from pathlib import Path
+from typing import Union, Optional, List
 
-import pandas as pd
+import polars as pl
 
 
 class CSVDataSource:
@@ -8,53 +9,63 @@ class CSVDataSource:
     CSV DataSource class to manage data retrieval from CSV files.
 
     Attributes:
-        file_path (str): Path to the CSV file.
+        file_path (Union[Path, str]): Path to the CSV file.
         delimiter (str): Delimiter used in the CSV file.
         encoding (str): Encoding of the CSV file.
-        dataframe (Optional[pd.DataFrame]): Loaded data as a pandas DataFrame.
+        dataframe (Optional[pl.DataFrame]): Loaded data as a polars DataFrame.
     """
 
-    def __init__(self, file_path: str, delimiter: str = ",", encoding: str = "utf-8"):
+    def __init__(
+            self,
+            file_path: Union[Path, str],
+            delimiter: str = ",",
+            encoding: str = "utf8"
+    ):
         self.file_path = file_path
         self.delimiter = delimiter
         self.encoding = encoding
-        self.dataframe: Optional[pd.DataFrame] = None
+        self.dataframe: Optional[pl.DataFrame] = None
         self.__load_data()
 
     def __load_data(self) -> None:
         """
-        Load data from the CSV file into a pandas DataFrame.
+        Load data from the CSV file into a polars DataFrame.
         """
-        self.dataframe = pd.read_csv(
-            self.file_path, delimiter=self.delimiter, encoding=self.encoding
+        self.dataframe = pl.read_csv(
+            source=self.file_path,
+            separator=self.delimiter,
+            encoding=self.encoding
         )
 
     @property
-    def file_path(self) -> str:
+    def file_path(self) -> Union[Path, str]:
         """
         Get the path to the CSV file.
 
         Returns:
-            str: Path to the CSV file.
+            Union[Path, str]: Path to the CSV file.
         """
         return self.__file_path
 
     @file_path.setter
-    def file_path(self, file_path: str) -> None:
+    def file_path(self, file_path: Union[Path, str]) -> None:
         """
         Set the path to the CSV file.
 
         Args:
-            file_path (str): Path to the CSV file.
+            file_path (Union[Path, str]): Path to the CSV file.
 
         Raises:
             TypeError: If 'file_path' is not a string.
             ValueError: If 'file_path' is an empty string.
         """
-        if not isinstance(file_path, str):
-            raise TypeError("'file_path' must be a string.")
-        if not file_path.strip():
-            raise ValueError("'file_path' cannot be an empty string.")
+        if not isinstance(file_path, (Path, str)):
+            raise TypeError("'file_path' must be either a string or 'Path' object.")
+
+        # Ensure that path exists
+        file_path = Path(file_path) if isinstance(file_path, str) else file_path
+        if not file_path.exists() or file_path.is_dir():
+            raise FileNotFoundError(f"'{file_path}' does not exist.")
         self.__file_path = file_path
 
     @property
@@ -98,12 +109,12 @@ class CSVDataSource:
             raise TypeError("'encoding' must be a string.")
         self.__encoding = encoding
 
-    def fetch_data(self) -> pd.DataFrame:
+    def fetch_data(self) -> pl.DataFrame:
         """
-        Fetch all data from the CSV file as a pandas DataFrame.
+        Fetch all data from the CSV file as a polars DataFrame.
 
         Returns:
-            pd.DataFrame: Data loaded from the CSV file.
+            pl.DataFrame: Data loaded from the CSV file.
         """
         if self.dataframe is None:
             raise RuntimeError("No data loaded from the CSV file.")
@@ -120,15 +131,15 @@ class CSVDataSource:
             raise RuntimeError("No data loaded from the CSV file.")
         return list(self.dataframe.columns)
 
-    def filter_data(self, query: str) -> pd.DataFrame:
+    def filter_data(self, query: str) -> pl.DataFrame:
         """
-        Filter the CSV data using a pandas query string.
+        Filter the CSV data using a polars query string.
 
         Args:
             query (str): Query string to filter the data.
 
         Returns:
-            pd.DataFrame: Filtered data based on the query.
+            pl.DataFrame: Filtered data based on the query.
 
         Raises:
             RuntimeError: If no data is loaded.
@@ -138,7 +149,7 @@ class CSVDataSource:
             raise RuntimeError("No data loaded from the CSV file.")
 
         try:
-            return self.dataframe.query(query)
+            return self.dataframe.sql(query=query)
         except Exception as e:
             raise ValueError(f"Invalid query: {query}") from e
 

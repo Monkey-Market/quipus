@@ -1,6 +1,11 @@
-import pandas as pd
+from typing import TypeAlias, Union, Iterator, Tuple, Any, Dict, List
+
+import polars as pl
 
 from .certificate import Certificate
+
+
+PolarsRow: TypeAlias = Union[Iterator[Tuple[Any, ...]], Iterator[Dict[str, Any]]]
 
 
 class CertificateFactory:
@@ -12,12 +17,12 @@ class CertificateFactory:
         - create_certificates: create a list of Certificate objects from a DataFrame
     """
     @staticmethod
-    def create_one_certificate(row: pd.Series) -> Certificate:
+    def create_one_certificate(row: PolarsRow) -> Certificate:
         """
         Create a single Certificate object from a row in a DataFrame
         
         Args:
-            row (pd.Series): a row in a DataFrame containing the certificate data
+            row (PolarsRow): a row in a DataFrame containing the certificate data
             
         Returns:
             Certificate: a Certificate object created from the row
@@ -32,16 +37,17 @@ class CertificateFactory:
         )
 
     @staticmethod
-    def create_certificates(df: pd.DataFrame) -> list[Certificate]:
+    def create_certificates(df: pl.DataFrame) -> List[Certificate]:
         """
         Create a list of Certificate objects from a DataFrame
         
         Args:
-            df (pd.DataFrame): a DataFrame containing the certificate data
+            df (pl.DataFrame): a DataFrame containing the certificate data
             
         Returns:
-            list[Certificate]: a list of Certificate objects created from the DataFrame
+            List[Certificate]: a list of Certificate objects created from the DataFrame
         """
         return [
-            CertificateFactory.create_one_certificate(row) for _, row in df.iterrows()
+            CertificateFactory.create_one_certificate(row)
+            for row in df.iter_rows(named=True)
         ]

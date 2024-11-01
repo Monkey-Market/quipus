@@ -93,8 +93,10 @@ class TemplateManager:
 
     def from_csv(self, path_to_file: str) -> Self:
         csv_data_source = CSVDataSource(file_path=path_to_file)
-        self.data = csv_data_source.fetch_data().to_dict(orient="records")
-
+        fetched_data = csv_data_source.fetch_data()
+        self.data = []
+        for row in fetched_data.iter_rows(named=True):
+            self.data.append(row)
         return self
 
     def with_multiple_templates(self, templates: list[Template]):
