@@ -1,16 +1,14 @@
 """
 The root module of the library provides a unified API for accessing the main 
 components of the library. It includes functionalities for loading data from 
-various sources, managing documents (such as certificates), and delivering 
+various sources, managing documents (such as invoices), and delivering 
 files or documents through email, SFTP, or S3.
 
 Classes:
     CSVDataSource: Loads data from CSV files.
-    DataFrameDataSource: Loads data from pandas DataFrames.
+    DataFrameDataSource: Loads data from polars DataFrames.
     PostgreSQLDataSource: Loads data from PostgreSQL databases.
     XLSXDataSource: Loads data from XLSX files.
-    Certificate: Represents a certificate entity.
-    CertificateFactory: Provides methods for creating certificates.
     Template: Manages HTML templates with associated CSS and assets.
     EmailMessageBuilder: Helps in constructing email messages.
     EmailSender: Sends emails via an SMTP server.
@@ -26,7 +24,7 @@ from .data_sources import (
     PostgreSQLDataSource,
     XLSXDataSource,
 )
-from .models import Certificate, CertificateFactory, Template
+from .models import Template
 from .services import (
     EmailMessageBuilder,
     EmailSender,
@@ -42,8 +40,6 @@ __all__ = [
     "DataFrameDataSource",
     "PostgreSQLDataSource",
     "XLSXDataSource",
-    "Certificate",
-    "CertificateFactory",
     "Template",
     "EmailMessageBuilder",
     "EmailSender",
