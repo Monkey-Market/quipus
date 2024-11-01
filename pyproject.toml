@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "quipus"
-version = "0.2.3"
+version = "0.2.4"
 description = "Data retrieval, template manager and delivery all in one!"
 authors = [
     "Jorge U. Alarcón <j1dev@proton.me>",
