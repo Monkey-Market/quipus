@@ -13,6 +13,7 @@ Classes:
 from .file_source import FileSource
 from .csv_source import CSVSource
 from .xlsx_source import XLSXSource
+from .parquet_source import ParquetSource
 
 from .csv_data_source import CSVDataSource
 from .dataframe_data_source import DataFrameDataSource
@@ -24,6 +25,7 @@ __all__ = [
     "FileSource",
     "CSVSource",
     "XLSXSource",
+    "ParquetSource",
     "CSVDataSource",
     "DataFrameDataSource",
     "PostgreSQLDataSource",
