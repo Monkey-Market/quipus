@@ -10,6 +10,10 @@ Classes:
     XLSXDataSource: Class for loading data from XLSX files.
 """
 
+from .file_source import FileSource
+from .csv_source import CSVSource
+from .xlsx_source import XLSXSource
+
 from .csv_data_source import CSVDataSource
 from .dataframe_data_source import DataFrameDataSource
 from .postgresql_data_source import PostgreSQLDataSource
@@ -17,6 +21,9 @@ from .xlsx_data_source import XLSXDataSource
 
 
 __all__ = [
+    "FileSource",
+    "CSVSource",
+    "XLSXSource",
     "CSVDataSource",
     "DataFrameDataSource",
     "PostgreSQLDataSource",

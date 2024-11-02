@@ -18,7 +18,11 @@ Classes:
     TemplateManager: Manages document templates and integrates them with data sources.
 """
 
+from .utils import VALID_ENCODINGS, EncodingType
 from .data_sources import (
+    FileSource,
+    CSVSource,
+    XLSXSource,
     CSVDataSource,
     DataFrameDataSource,
     PostgreSQLDataSource,
@@ -36,6 +40,11 @@ from .services import (
 )
 
 __all__ = [
+    "VALID_ENCODINGS",
+    "EncodingType",
+    "FileSource",
+    "CSVSource",
+    "XLSXSource",
     "CSVDataSource",
     "DataFrameDataSource",
     "PostgreSQLDataSource",
