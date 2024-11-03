@@ -152,7 +152,7 @@ You can always open an issue or submit a pull request if you have any suggestion
   </tr>
 </table>
 
-## Trivia 🪢
+## Trivia
 
 The name "*Quipus*" comes from the Quechua word "*khipu*" which refers to a method used by the Incas to keep records and communicate information through a system of knots and strings.
 
