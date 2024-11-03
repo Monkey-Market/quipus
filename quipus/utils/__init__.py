@@ -1,4 +1,4 @@
-from .constants import VALID_ENCODINGS, EncodingType
+from .constants import EncodingType
 from .connectable import Connectable
 
-__all__ = ["VALID_ENCODINGS", "EncodingType", "Connectable"]
+__all__ = ["EncodingType", "Connectable"]

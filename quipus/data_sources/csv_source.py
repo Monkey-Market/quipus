@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Any, List, Optional, Tuple, Union
+from typing import Optional, Union
 import polars as pl
 
 from .file_source import FileSource
@@ -15,11 +15,11 @@ class CSVSource(FileSource):
         delimiter: str = ",",
         quote_char: Optional[str] = None,
         skip_rows: int = 0,
-        na_values: Optional[List[str]] = None,
+        na_values: Optional[list[str]] = None,
         encoding: Optional[EncodingType] = "utf-8",
         has_header: bool = True,
-        columns: Optional[List[str]] = None,
-        date_columns: Optional[List[str]] = None,
+        columns: Optional[list[str]] = None,
+        date_columns: Optional[list[str]] = None,
     ):
         super().__init__(
             file_path=file_path,
@@ -28,10 +28,10 @@ class CSVSource(FileSource):
             columns=columns,
             date_columns=date_columns,
         )
-        self._delimiter = delimiter
-        self._quote_char = quote_char
-        self._skip_rows = skip_rows
-        self._na_values = na_values if na_values else []
+        self.delimiter = delimiter
+        self.quote_char = quote_char
+        self.skip_rows = skip_rows
+        self.na_values = na_values if na_values else []
 
     @property
     def delimiter(self) -> str:
@@ -72,11 +72,11 @@ class CSVSource(FileSource):
         self._skip_rows = value
 
     @property
-    def na_values(self) -> List[str]:
+    def na_values(self) -> list[str]:
         return self._na_values
 
     @na_values.setter
-    def na_values(self, value: List[str]) -> None:
+    def na_values(self, value: list[str]) -> None:
         if not all(isinstance(v, str) for v in value):
             raise TypeError("na_values must be a list of strings.")
         self._na_values = value
@@ -104,12 +104,12 @@ class CSVSource(FileSource):
                 f"An error occurred while loading data from {self.file_path}."
             ) from e
 
-    def get_columns(self) -> List[str]:
+    def get_columns(self) -> list[str]:
         """
         Retrieves the list of columns from the CSV file.
 
         Returns:
-            List[str]: A list of column names.
+            list[str]: A list of column names.
         """
         try:
             df = pl.read_csv(
