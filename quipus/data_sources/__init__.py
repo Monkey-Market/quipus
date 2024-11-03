@@ -15,6 +15,9 @@ from .csv_source import CSVSource
 from .xlsx_source import XLSXSource
 from .parquet_source import ParquetSource
 
+from .database_source import DataBaseSource
+from .postgre_source import PostgreSQLSource
+
 from .csv_data_source import CSVDataSource
 from .dataframe_data_source import DataFrameDataSource
 from .postgresql_data_source import PostgreSQLDataSource
@@ -26,6 +29,8 @@ __all__ = [
     "CSVSource",
     "XLSXSource",
     "ParquetSource",
+    "DataBaseSource",
+    "PostgreSQLSource",
     "CSVDataSource",
     "DataFrameDataSource",
     "PostgreSQLDataSource",

@@ -1,12 +1,29 @@
 from abc import abstractmethod
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
-import polars as pl
 from .data_source import DataSource
 from ..utils import EncodingType, VALID_ENCODINGS
 
+import polars as pl
+
 
 class FileSource(DataSource):
+    """
+    Abstract class for file data sources.
+
+    Attributes:
+        file_path: The path to the file.
+        encoding: The encoding of the file.
+        has_header: A boolean indicating if the file has a header.
+        columns: A list of column names.
+        read_options: Additional options for reading the file.
+        date_columns: A list of column names that contain dates.
+
+    Methods:
+        load_data: Load the data from the file.
+        get_columns: Get the columns of the file.
+    """
+
     def __init__(
         self,
         file_path: Union[str, Path],
