@@ -1,6 +1,5 @@
 from psycopg_pool import ConnectionPool
 from .database_source import DataBaseSource
-from typing import List
 
 import polars as pl
 
@@ -10,12 +9,26 @@ class PostgreSQLSource(DataBaseSource):
     Class for managing connections to a PostgreSQL database using psycopg v3 and connection pooling.
 
     Attributes:
-        connection_pool: The connection pool for the PostgreSQL database. (`postgresql://username:password@hostname:port/database`)
+        connection_string (str): The connection string for the PostgreSQL database.
+        query: The query to execute on the database.
     """
 
-    def __init__(self, connection_string: str):
+    def __init__(self, connection_string: str, query: str):
         super().__init__(connection_string)
         self._connection_pool = None
+        self.query = query
+
+    @property
+    def query(self) -> str:
+        return self._query
+
+    @query.setter
+    def query(self, value: str) -> None:
+        if not isinstance(value, str):
+            raise ValueError("The query must be a string.")
+        if value.strip() == "":
+            raise ValueError("The query cannot be empty.")
+        self._query = value
 
     @classmethod
     def build_connection_string(
@@ -85,36 +98,29 @@ class PostgreSQLSource(DataBaseSource):
         else:
             raise RuntimeError("No active connection to disconnect.")
 
-    def load_data(self, query: str) -> pl.DataFrame:
+    def load_data(self) -> pl.DataFrame:
         """
         Executes a query to load data from the PostgreSQL database.
-
-        Args:
-            query (str): The SQL query to execute.
 
         Returns:
             Any: The result of the query as a list of tuples.
 
         Raises:
             RuntimeError: If an error occurs while loading the data.
-            ValueError: If the query is not a SELECT query.
         """
         if not self._connected or not self._connection:
             raise RuntimeError("Not connected to the database.")
 
-        if not query.strip().lower().startswith("select"):
-            raise ValueError("Only SELECT queries are allowed for loading data.")
-
         try:
             with self._connection.cursor() as cursor:
-                cursor.execute(query)
+                cursor.execute(self.query)
                 result = cursor.fetchall()
                 columns = [desc[0] for desc in cursor.description]
                 return self.to_polars_df(result, columns)
         except Exception as e:
             raise RuntimeError(f"Error loading data: {e}")
 
-    def get_columns(self, table_name: str) -> List[str]:
+    def get_columns(self, table_name: str) -> list[str]:
         """
         Retrieves the list of columns from a specific table in the PostgreSQL database.
 
@@ -122,7 +128,7 @@ class PostgreSQLSource(DataBaseSource):
             table_name (str): The name of the table.
 
         Returns:
-            List[str]: A list of column names.
+            list[str]: A list of column names.
         """
         if not self._connected or not self._connection:
             raise RuntimeError("Not connected to the database.")
