@@ -1,7 +1,6 @@
 from abc import abstractmethod
 from .data_source import DataSource
 from ..utils import Connectable
-from typing import List
 
 import polars as pl
 
@@ -23,8 +22,8 @@ class DataBaseSource(DataSource, Connectable):
     """
 
     def __init__(self, connection_string: str):
-        self._connection_string = connection_string
-        self._connected = False
+        self.connection_string = connection_string
+        self.connected = False
         self._connection_pool = None
 
     @property
@@ -66,7 +65,7 @@ class DataBaseSource(DataSource, Connectable):
         pass
 
     @abstractmethod
-    def get_columns(self, table_name: str) -> List[str]:
+    def get_columns(self, table_name: str) -> list[str]:
         """Method to be overridden by subclasses to get columns from a specific table."""
         pass
 

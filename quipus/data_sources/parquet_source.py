@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Optional, Union
 import polars as pl
 from .file_source import FileSource
 
@@ -8,8 +8,8 @@ class ParquetSource(FileSource):
     def __init__(
         self,
         file_path: Union[str, Path],
-        columns: Optional[List[str]] = None,
-        read_options: Optional[Dict[str, Any]] = None,
+        columns: Optional[list[str]] = None,
+        read_options: Optional[dict[str, Any]] = None,
     ):
         super().__init__(
             file_path=file_path,
@@ -31,12 +31,12 @@ class ParquetSource(FileSource):
                 f"An error occurred while loading data from {self.file_path}."
             ) from e
 
-    def get_columns(self) -> List[str]:
+    def get_columns(self) -> list[str]:
         """
         Retrieves the list of columns from the Parquet file.
 
         Returns:
-            List[str]: A list of column names.
+            list[str]: A list of column names.
         """
         try:
             df = pl.read_parquet(

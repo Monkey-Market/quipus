@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Optional, Union
 
 import polars as pl
 
@@ -13,9 +13,9 @@ class XLSXSource(FileSource):
         file_path: Union[str, Path],
         sheet: Optional[Union[str, int]] = 0,
         has_header: bool = True,
-        columns: Optional[List[str]] = None,
-        read_options: Optional[Dict[str, Any]] = None,
-        date_columns: Optional[List[str]] = None,
+        columns: Optional[list[str]] = None,
+        read_options: Optional[dict[str, Any]] = None,
+        date_columns: Optional[list[str]] = None,
     ):
         super().__init__(
             file_path=file_path,
@@ -24,7 +24,7 @@ class XLSXSource(FileSource):
             read_options=read_options,
             date_columns=date_columns,
         )
-        self._sheet = sheet
+        self.sheet = sheet
 
     @property
     def sheet(self) -> Optional[Union[str, int]]:
@@ -58,13 +58,13 @@ class XLSXSource(FileSource):
             ) from e
 
     def _select_sheet(
-        self, result: Union[pl.DataFrame, Dict[str, pl.DataFrame]]
+        self, result: Union[pl.DataFrame, dict[str, pl.DataFrame]]
     ) -> pl.DataFrame:
         """
         Selects the correct sheet from the result based on sheet_name or sheet_id.
 
         Args:
-            result (Union[pl.DataFrame, Dict[str, pl.DataFrame]]): The result from pl.read_excel.
+            result (Union[pl.DataFrame, dict[str, pl.DataFrame]]): The result from pl.read_excel.
 
         Returns:
             pl.DataFrame: The selected DataFrame for the specified sheet.
@@ -93,12 +93,12 @@ class XLSXSource(FileSource):
         # Excel sheet not specified, returning first
         return result[sheet_names[0]]
 
-    def get_columns(self) -> List[str]:
+    def get_columns(self) -> list[str]:
         """
         Retrieves the list of columns from the Excel file.
 
         Returns:
-            List[str]: A list of column names from the Excel file.
+            list[str]: A list of column names from the Excel file.
         """
         try:
             result = pl.read_excel(

@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import List, Tuple, Union
+from typing import Union
 import polars as pl
 
 
@@ -18,26 +18,26 @@ class DataSource(ABC):
         pass
 
     @abstractmethod
-    def get_columns(self) -> List[str]:
+    def get_columns(self) -> list[str]:
         """Method to be overridden by subclasses to get all columns from the data source."""
         pass
 
     def to_polars_df(
-        self, data: Union[pl.DataFrame, List[Tuple]], columns: List[str] = None
+        self, data: Union[pl.DataFrame, list[tuple]], columns: list[str] = None
     ) -> pl.DataFrame:
         """
         Converts data to a Polars DataFrame.
 
         Args:
-            data (Union[pl.DataFrame, List[tuple]]): The data to convert.
-            columns (List[str], optional): The column names for the DataFrame.
+            data (Union[pl.DataFrame, list[tuple]]): The data to convert.
+            columns (list[str], optional): The column names for the DataFrame.
 
         Returns:
             pl.DataFrame: The converted Polars DataFrame.
         """
         if isinstance(data, pl.DataFrame):
             return data
-        elif isinstance(data, list) and all(isinstance(row, Tuple) for row in data):
+        elif isinstance(data, list) and all(isinstance(row, tuple) for row in data):
             return pl.DataFrame(data, schema=columns, orient="row")
         else:
             raise ValueError(
