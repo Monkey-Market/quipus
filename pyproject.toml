@@ -22,6 +22,7 @@ psycopg-pool = "^3.2.3"
 openpyxl = "^3.1.5"
 XlsxWriter = "^3.2.0"
 fastexcel = "^0.12.0"
+pymongo = "^4.10.1"
 
 [tool.poetry.group.dev.dependencies]
 pylint = "^3.3.1"

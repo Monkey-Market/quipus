@@ -23,13 +23,15 @@ class DataSource(ABC):
         pass
 
     def to_polars_df(
-        self, data: Union[pl.DataFrame, list[tuple]], columns: list[str] = None
+        self,
+        data: Union[pl.DataFrame, list[tuple], list[dict]],
+        columns: list[str] = None,
     ) -> pl.DataFrame:
         """
         Converts data to a Polars DataFrame.
 
         Args:
-            data (Union[pl.DataFrame, list[tuple]]): The data to convert.
+            data (Union[pl.DataFrame, list[tuple], list[dict]]): The data to convert.
             columns (list[str], optional): The column names for the DataFrame.
 
         Returns:
@@ -39,6 +41,8 @@ class DataSource(ABC):
             return data
         elif isinstance(data, list) and all(isinstance(row, tuple) for row in data):
             return pl.DataFrame(data, schema=columns, orient="row")
+        elif isinstance(data, list) and all(isinstance(row, dict) for row in data):
+            return pl.DataFrame(data)
         else:
             raise ValueError(
                 "Unsupported data format for conversion to Polars DataFrame."
