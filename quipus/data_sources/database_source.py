@@ -1,7 +1,8 @@
 from abc import abstractmethod
-from .data_source import DataSource
-from ..utils import Connectable
+from typing import Optional
 
+from .data_source import DataSource
+from ..utils import Connectable, DBConfig
 import polars as pl
 
 
@@ -9,35 +10,29 @@ class DataBaseSource(DataSource, Connectable):
     """
     Abstract class for database sources.
 
-    Attributes:
-        connection_string: The connection string for the database.
-        connected: A boolean indicating if the database is connected.
-
     Methods:
         connect: Connect to the database.
         disconnect: Disconnect from the database.
         load_data: Load data from the database using a query.
         get_columns: Get the columns of a specific table in the database.
         initialize_pool: Initialize a connection pool.
+        build_connection_string: Build a connection string.
     """
 
-    def __init__(self, connection_string: str):
-        self.connection_string = connection_string
+    def __init__(
+        self,
+        connection_string: Optional[str] = None,
+        db_config: Optional[DBConfig] = None,
+    ):
+        if not connection_string and not db_config:
+            raise ValueError("A connection string or DBConfig must be provided.")
+
+        if connection_string:
+            super().__init__(connection_string)
+
+        self.db_config = db_config
         self.connected = False
         self._connection_pool = None
-
-    @property
-    def connection_string(self) -> str:
-        return self._connection_string
-
-    @connection_string.setter
-    def connection_string(self, value: str) -> None:
-        if not isinstance(value, str):
-            raise ValueError("The connection string must be a string.")
-
-        if value.strip() == "":
-            raise ValueError("The connection string cannot be empty.")
-        self._connection_string = value
 
     @property
     def connected(self) -> bool:

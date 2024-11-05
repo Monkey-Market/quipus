@@ -18,6 +18,7 @@ from .parquet_source import ParquetSource
 from .database_source import DataBaseSource
 from .postgre_source import PostgreSQLSource
 from .mongo_source import MongoDBSource
+from .mysql_source import MySQLSource
 
 from .csv_data_source import CSVDataSource
 from .dataframe_data_source import DataFrameDataSource
@@ -33,6 +34,7 @@ __all__ = [
     "DataBaseSource",
     "PostgreSQLSource",
     "MongoDBSource",
+    "MySQLSource",
     "CSVDataSource",
     "DataFrameDataSource",
     "PostgreSQLDataSource",

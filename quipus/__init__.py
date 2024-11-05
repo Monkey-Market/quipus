@@ -18,7 +18,7 @@ Classes:
     TemplateManager: Manages document templates and integrates them with data sources.
 """
 
-from .utils import EncodingType, Connectable
+from .utils import EncodingType, Connectable, DBConfig
 from .data_sources import (
     FileSource,
     CSVSource,
@@ -27,6 +27,7 @@ from .data_sources import (
     DataBaseSource,
     PostgreSQLSource,
     MongoDBSource,
+    MySQLSource,
     CSVDataSource,
     DataFrameDataSource,
     PostgreSQLDataSource,
@@ -46,6 +47,7 @@ from .services import (
 __all__ = [
     "EncodingType",
     "Connectable",
+    "DBConfig",
     "FileSource",
     "CSVSource",
     "XLSXSource",
@@ -53,6 +55,7 @@ __all__ = [
     "DataBaseSource",
     "PostgreSQLSource",
     "MongoDBSource",
+    "MySQLSource",
     "CSVDataSource",
     "DataFrameDataSource",
     "PostgreSQLDataSource",
