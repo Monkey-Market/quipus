@@ -2,12 +2,35 @@ from pathlib import Path
 from typing import Optional, Union
 import polars as pl
 
-from .file_source import FileSource
-
-from ..utils import EncodingType
+from quipus.data_sources import FileSource
+from quipus.utils import EncodingType
 
 
 class CSVSource(FileSource):
+    """
+    A class for loading and processing data from CSV files.
+
+    Inherits from:
+        FileSource: Base class for handling file sources.
+
+    Attributes:
+        file_path (Union[str, Path]): The path to the CSV file.
+        delimiter (str): The character used to separate values in the CSV file.
+        quote_char (Optional[str]): The character used to quote strings in the CSV file.
+        skip_rows (int): The number of rows to skip at the start of the file.
+        na_values (list[str]): A list of values to interpret as missing/NA.
+        encoding (Optional[EncodingType]): The encoding used for reading the file.
+        has_header (bool): Indicates if the CSV file has a header row.
+        columns (Optional[list[str]]): A list of columns to read from the file.
+        date_columns (Optional[list[str]]): A list of column names that contain date values.
+
+    Methods:
+        load_data() -> pl.DataFrame:
+            Loads data from the CSV file into a Polars DataFrame.
+
+        get_columns() -> list[str]:
+            Retrieves the list of columns from the CSV file.
+    """
 
     def __init__(
         self,
@@ -21,6 +44,20 @@ class CSVSource(FileSource):
         columns: Optional[list[str]] = None,
         date_columns: Optional[list[str]] = None,
     ):
+        """
+        Initializes a CSVSource instance with the specified parameters.
+
+        Parameters:
+            file_path (Union[str, Path]): The path to the CSV file.
+            delimiter (str, optional): The character used to separate values. Defaults to ",".
+            quote_char (Optional[str], optional): The character used to quote strings. Defaults to None.
+            skip_rows (int, optional): The number of rows to skip at the start of the file. Defaults to 0.
+            na_values (Optional[list[str]], optional): A list of values to treat as missing/NA. Defaults to None.
+            encoding (Optional[EncodingType], optional): The file encoding. Defaults to "utf-8".
+            has_header (bool, optional): Indicates if the file has a header row. Defaults to True.
+            columns (Optional[list[str]], optional): Columns to read from the file. Defaults to None.
+            date_columns (Optional[list[str]], optional): Columns containing date values. Defaults to None.
+        """
         super().__init__(
             file_path=file_path,
             encoding=encoding,
@@ -35,36 +72,83 @@ class CSVSource(FileSource):
 
     @property
     def delimiter(self) -> str:
+        """
+        str: The character used to separate values in the CSV file.
+        """
         return self._delimiter
 
     @delimiter.setter
     def delimiter(self, value: str) -> None:
-        if len(value) != 1:
-            raise ValueError("Delimiter must be a single character.")
+        """
+        Sets the delimiter used to separate values in the CSV file.
+
+        Parameters:
+            value (str): The delimiter character.
+
+        Raises:
+            ValueError: If the delimiter is not a single character.
+            TypeError: If the delimiter is not a string.
+        """
         if not isinstance(value, str):
             raise TypeError("Delimiter must be a string.")
+        if len(value) != 1:
+            raise ValueError("Delimiter must be a single character.")
         self._delimiter = value
 
     @property
     def quote_char(self) -> Optional[str]:
+        """
+        Optional[str]: The character used to quote strings in the CSV file.
+
+        Raises:
+            ValueError: If the quote character is the same as the delimiter or not a single character.
+            TypeError: If the quote character is not a string.
+        """
         return self._quote_char
 
     @quote_char.setter
     def quote_char(self, value: Optional[str]) -> None:
-        if value is not None and len(value) != 1:
-            raise ValueError("Quote character must be a single character.")
-        if value == self._delimiter:
-            raise ValueError("Quote character cannot be the same as the delimiter.")
+        """
+        Sets the quote character used to quote strings in the CSV file.
+
+        Parameters:
+            value (Optional[str]): The quote character.
+
+        Raises:
+            ValueError: If the quote character is the same as the delimiter or not a single character.
+            TypeError: If the quote character is not a string.
+        """
         if not isinstance(value, str):
             raise TypeError("Quote character must be a string.")
+        if len(value) != 1:
+            raise ValueError("Quote character must be a single character.")
+        if value == self.delimiter:
+            raise ValueError("Quote character cannot be the same as the delimiter.")
         self._quote_char = value
 
     @property
     def skip_rows(self) -> int:
+        """
+        int: The number of rows to skip at the start of the CSV file.
+
+        Raises:
+            TypeError: If skip_rows is not an integer.
+            ValueError: If skip_rows is negative.
+        """
         return self._skip_rows
 
     @skip_rows.setter
     def skip_rows(self, value: int) -> None:
+        """
+        Sets the number of rows to skip at the start of the CSV file.
+
+        Parameters:
+            value (int): The number of rows to skip.
+
+        Raises:
+            TypeError: If skip_rows is not an integer.
+            ValueError: If skip_rows is negative.
+        """
         if not isinstance(value, int):
             raise TypeError("skip_rows must be an integer value.")
         if value < 0:
@@ -73,12 +157,31 @@ class CSVSource(FileSource):
 
     @property
     def na_values(self) -> list[str]:
+        """
+        list[str]: The values to treat as missing/NA.
+
+        Raises:
+            TypeError: If any value in na_values is not a string.
+        """
         return self._na_values
 
     @na_values.setter
     def na_values(self, value: list[str]) -> None:
-        if not all(isinstance(v, str) for v in value):
+        """
+        Sets the values to treat as missing/NA.
+
+        Parameters:
+            value (list[str]): A list of values to treat as missing.
+
+        Raises:
+            TypeError: If any value in na_values is not a string.
+        """
+        if not isinstance(value, list):
             raise TypeError("na_values must be a list of strings.")
+
+        if not all(isinstance(v, str) for v in value):
+            raise TypeError("All values in na_values must be strings.")
+
         self._na_values = value
 
     def load_data(self) -> pl.DataFrame:
@@ -88,40 +191,30 @@ class CSVSource(FileSource):
         Returns:
             pl.DataFrame: A Polars DataFrame with the data from the CSV file.
         """
-        try:
-            return pl.read_csv(
-                source=self.file_path,
-                separator=self.delimiter,
-                quote_char=self.quote_char,
-                encoding=self.encoding,
-                has_header=self.has_header,
-                columns=self.columns,
-                skip_rows=self.skip_rows,
-                null_values=self.na_values,
-            )
-        except Exception as e:
-            raise RuntimeError(
-                f"An error occurred while loading data from {self.file_path}."
-            ) from e
+        return pl.read_csv(
+            source=self.file_path,
+            separator=self.delimiter,
+            quote_char=self.quote_char,
+            encoding=self.encoding,
+            has_header=self.has_header,
+            columns=self.columns,
+            skip_rows=self.skip_rows,
+            null_values=self.na_values,
+        )
 
-    def get_columns(self) -> list[str]:
+    def get_columns(self, *args, **kwargs) -> list[str]:
         """
         Retrieves the list of columns from the CSV file.
 
         Returns:
             list[str]: A list of column names.
         """
-        try:
-            df = pl.read_csv(
-                source=self.file_path,
-                n_rows=0,
-                separator=self.delimiter,
-                quote_char=self.quote_char,
-                encoding=self.encoding,
-                has_header=self.has_header,
-            )
-            return df.columns
-        except Exception as e:
-            raise RuntimeError(
-                f"An error occurred while reading column names from {self.file_path}."
-            ) from e
+        df = pl.read_csv(
+            source=self.file_path,
+            n_rows=0,
+            separator=self.delimiter,
+            quote_char=self.quote_char,
+            encoding=self.encoding,
+            has_header=self.has_header,
+        )
+        return df.columns
