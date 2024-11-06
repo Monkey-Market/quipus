@@ -1,22 +1,17 @@
-from abc import abstractmethod
 from typing import Optional
 
-from .data_source import DataSource
-from ..utils import Connectable, DBConfig
-import polars as pl
+from quipus.data_sources import DataSource
+from quipus.utils import Connectable, DBConfig
 
 
 class DataBaseSource(DataSource, Connectable):
     """
-    Abstract class for database sources.
+    An abstract base class for database sources.
 
-    Methods:
-        connect: Connect to the database.
-        disconnect: Disconnect from the database.
-        load_data: Load data from the database using a query.
-        get_columns: Get the columns of a specific table in the database.
-        initialize_pool: Initialize a connection pool.
-        build_connection_string: Build a connection string.
+    Attributes:
+        connected (bool): Indicates whether the source is currently connected to the database.
+            Default is False.
+        db_config (DBConfig): The database connection configuration and credentials.
     """
 
     def __init__(
@@ -24,6 +19,18 @@ class DataBaseSource(DataSource, Connectable):
         connection_string: Optional[str] = None,
         db_config: Optional[DBConfig] = None,
     ):
+        """
+        Initializes a DataBaseSource instance.
+
+        Parameters:
+            connection_string (Optional[str], optional): The connection string for the database.
+                Defaults to None.
+            db_config (Optional[DBConfig], optional): The database connection configuration.
+                Defaults to None.
+
+        Raises:
+            ValueError: If neither a connection string nor a DBConfig object is provided.
+        """
         if not connection_string and not db_config:
             raise ValueError("A connection string or DBConfig must be provided.")
 
@@ -32,39 +39,28 @@ class DataBaseSource(DataSource, Connectable):
 
         self.db_config = db_config
         self.connected = False
-        self._connection_pool = None
 
     @property
     def connected(self) -> bool:
+        """
+        bool: Indicates whether the source is connected to the database.
+
+        Raises:
+            TypeError: If the value set is not a boolean.
+        """
         return self._connected
 
     @connected.setter
     def connected(self, value: bool) -> None:
+        """
+        Sets the connection status of the database source.
+
+        Parameters:
+            value (bool): The new connection status.
+
+        Raises:
+            TypeError: If the provided value is not a boolean.
+        """
         if not isinstance(value, bool):
-            raise ValueError("The connected attribute must be a boolean.")
+            raise TypeError("The connected attribute must be a boolean.")
         self._connected = value
-
-    @abstractmethod
-    def connect(self) -> None:
-        """Method to be overridden by subclasses for connecting to the database."""
-        pass
-
-    @abstractmethod
-    def disconnect(self) -> None:
-        """Method to be overridden by subclasses for disconnecting from the database."""
-        pass
-
-    @abstractmethod
-    def load_data(self, query: str) -> pl.DataFrame:
-        """Method to be overridden by subclasses to load data using a query."""
-        pass
-
-    @abstractmethod
-    def get_columns(self, table_name: str) -> list[str]:
-        """Method to be overridden by subclasses to get columns from a specific table."""
-        pass
-
-    @abstractmethod
-    def initialize_pool(self, min_connections: int, max_connections: int) -> None:
-        """Method to be overridden by subclasses to initialize the connection pool."""
-        pass
