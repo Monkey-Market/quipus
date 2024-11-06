@@ -1,14 +1,21 @@
 """
-The `data_sources` module provides classes for loading data from various sources, 
-including CSV files, pandas DataFrames, PostgreSQL databases, and XLSX files. Each class is designed to handle a specific data source, abstracting the complexity of fetching and 
-managing data.
+The `data_sources` module provides classes for loading data from a variety of sources, 
+including CSV files, XLSX files, Parquet files, and databases such as PostgreSQL, MongoDB, 
+and MySQL. Each class abstracts the complexity of data retrieval, allowing users to easily 
+interact with and load data from different sources.
 
 Classes:
-    CSVDataSource: Class for loading data from CSV files.
-    DataFrameDataSource: Class for loading data from pandas DataFrames.
-    PostgreSQLDataSource: Class for loading data from PostgreSQL databases.
-    XLSXDataSource: Class for loading data from XLSX files.
+    FileSource: Abstract base class for file-based data sources.
+    CSVSource: Class for loading data from CSV files.
+    XLSXSource: Class for loading data from XLSX files.
+    ParquetSource: Class for loading data from Parquet files.
+    DataBaseSource: Abstract base class for database sources.
+    PostgreSQLSource: Class for connecting to and loading data from PostgreSQL databases.
+    MongoDBSource: Class for connecting to and loading data from MongoDB databases.
+    MySQLSource: Class for connecting to and loading data from MySQL databases.
 """
+
+from .data_source import DataSource
 
 from .file_source import FileSource
 from .csv_source import CSVSource
@@ -20,13 +27,11 @@ from .postgre_source import PostgreSQLSource
 from .mongo_source import MongoDBSource
 from .mysql_source import MySQLSource
 
+# Deprecated
 from .csv_data_source import CSVDataSource
-from .dataframe_data_source import DataFrameDataSource
-from .postgresql_data_source import PostgreSQLDataSource
-from .xlsx_data_source import XLSXDataSource
-
 
 __all__ = [
+    "DataSource",
     "FileSource",
     "CSVSource",
     "XLSXSource",
@@ -35,8 +40,7 @@ __all__ = [
     "PostgreSQLSource",
     "MongoDBSource",
     "MySQLSource",
+
+    # Deprecated
     "CSVDataSource",
-    "DataFrameDataSource",
-    "PostgreSQLDataSource",
-    "XLSXDataSource",
 ]

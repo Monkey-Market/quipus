@@ -5,21 +5,37 @@ import polars as pl
 
 class DataSource(ABC):
     """
-    Abstract class for data sources.
+    An abstract base class for data sources.
 
     Methods:
-        load_data: Load the data from the data source.
-        get_columns: Get the columns of the data source.
+        load_data() -> pl.DataFrame:
+            Abstract method to load data from the data source.
+
+        get_columns() -> list[str]:
+            Abstract method to get the column names from the data source.
+
+        to_polars_df(data: Union[pl.DataFrame, list[tuple], list[dict]], columns: list[str] = None) -> pl.DataFrame:
+            Converts provided data to a Polars DataFrame.
     """
 
     @abstractmethod
     def load_data(self) -> pl.DataFrame:
-        """Method to be overridden by subclasses to load data from the data source."""
+        """
+        Abstract method to be overridden by subclasses to load data from the data source.
+
+        Returns:
+            pl.DataFrame: The loaded data as a Polars DataFrame.
+        """
         pass
 
     @abstractmethod
-    def get_columns(self) -> list[str]:
-        """Method to be overridden by subclasses to get all columns from the data source."""
+    def get_columns(self, *args, **kwargs) -> list[str]:
+        """
+        Abstract method to be overridden by subclasses to retrieve column names from the data source.
+
+        Returns:
+            list[str]: A list of column names.
+        """
         pass
 
     def to_polars_df(
@@ -28,22 +44,38 @@ class DataSource(ABC):
         columns: list[str] = None,
     ) -> pl.DataFrame:
         """
-        Converts data to a Polars DataFrame.
+        Converts the provided data into a Polars DataFrame.
 
-        Args:
-            data (Union[pl.DataFrame, list[tuple], list[dict]]): The data to convert.
-            columns (list[str], optional): The column names for the DataFrame.
+        Parameters:
+            data (Union[pl.DataFrame, list[tuple], list[dict]]): The data to be converted. Can be a Polars DataFrame,
+                a list of tuples, or a list of dictionaries.
+            columns (list[str], optional): The column names for the DataFrame when data is a list of tuples. Defaults to None.
 
         Returns:
             pl.DataFrame: The converted Polars DataFrame.
+
+        Raises:
+            TypeError: If the provided data is not in an acceptable format.
+            ValueError: If the data format is unsupported for conversion.
         """
         if isinstance(data, pl.DataFrame):
             return data
-        elif isinstance(data, list) and all(isinstance(row, tuple) for row in data):
-            return pl.DataFrame(data, schema=columns, orient="row")
-        elif isinstance(data, list) and all(isinstance(row, dict) for row in data):
-            return pl.DataFrame(data)
-        else:
-            raise ValueError(
-                "Unsupported data format for conversion to Polars DataFrame."
+
+        if not isinstance(data, list):
+            raise TypeError(
+                "Data must be a Polars DataFrame, a list of tuples, or a list of dictionaries."
             )
+
+        if all(isinstance(row, tuple) for row in data):
+            if columns is None:
+                raise ValueError(
+                    "Columns must be provided when data is a list of tuples."
+                )
+            return pl.DataFrame(data, schema=columns, orient="row")
+
+        if all(isinstance(row, dict) for row in data):
+            return pl.DataFrame(data)
+
+        raise TypeError(
+            "All elements in the data list must be either tuples or dictionaries."
+        )
