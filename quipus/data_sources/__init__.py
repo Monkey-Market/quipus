@@ -5,42 +5,36 @@ and MySQL. Each class abstracts the complexity of data retrieval, allowing users
 interact with and load data from different sources.
 
 Classes:
-    FileSource: Abstract base class for file-based data sources.
     CSVSource: Class for loading data from CSV files.
-    XLSXSource: Class for loading data from XLSX files.
-    ParquetSource: Class for loading data from Parquet files.
     DataBaseSource: Abstract base class for database sources.
-    PostgreSQLSource: Class for connecting to and loading data from PostgreSQL databases.
+    FileSource: Abstract base class for file-based data sources.
     MongoDBSource: Class for connecting to and loading data from MongoDB databases.
     MySQLSource: Class for connecting to and loading data from MySQL databases.
+    ParquetSource: Class for loading data from Parquet files.
+    PostgreSQLSource: Class for connecting to and loading data from PostgreSQL databases.
+    XLSXSource: Class for loading data from XLSX files.
 """
 
-from .data_source import DataSource
-
-from .file_source import FileSource
+from .csv_data_source import CSVDataSource  # Deprecated
 from .csv_source import CSVSource
-from .xlsx_source import XLSXSource
-from .parquet_source import ParquetSource
-
+from .data_source import DataSource
 from .database_source import DataBaseSource
-from .postgre_source import PostgreSQLSource
+from .file_source import FileSource
 from .mongo_source import MongoDBSource
 from .mysql_source import MySQLSource
-
-# Deprecated
-from .csv_data_source import CSVDataSource
+from .parquet_source import ParquetSource
+from .postgre_source import PostgreSQLSource
+from .xlsx_source import XLSXSource
 
 __all__ = [
+    "CSVDataSource",  # Deprecated
+    "CSVSource",
+    "DataBaseSource",
     "DataSource",
     "FileSource",
-    "CSVSource",
-    "XLSXSource",
-    "ParquetSource",
-    "DataBaseSource",
-    "PostgreSQLSource",
     "MongoDBSource",
     "MySQLSource",
-
-    # Deprecated
-    "CSVDataSource",
+    "ParquetSource",
+    "PostgreSQLSource",
+    "XLSXSource",
 ]

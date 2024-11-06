@@ -49,7 +49,7 @@ class XLSXSource(FileSource):
             columns (Optional[list[str]], optional): Columns to be read from the sheet. Defaults to None.
             read_options (Optional[dict[str, Any]], optional): Additional options for reading the file.
                 Defaults to None.
-            date_columns (Optional[list[str]], optional): Columns to parse as dates. Defaults to None.
+            date_columns (list[str], optional): Columns to parse as dates. Defaults to None.
         """
         super().__init__(
             file_path=file_path,
@@ -126,17 +126,17 @@ class XLSXSource(FileSource):
         if isinstance(self.sheet, str):
             try:
                 return result[self.sheet]
-            except KeyError:
+            except KeyError as e:
                 raise ValueError(
                     f"Sheet name '{self.sheet}' not found in the Excel file."
-                )
+                ) from e
 
         # Excel sheet passed as an integer (0-based index)
         if isinstance(self.sheet, int):
             try:
                 return result[sheet_names[self.sheet]]
-            except IndexError:
-                raise ValueError(f"sheet_id {self.sheet} is out of range.")
+            except IndexError as e:
+                raise ValueError(f"sheet_id {self.sheet} is out of range.") from e
 
         # Excel sheet not specified, returning first
         return result[sheet_names[0]]

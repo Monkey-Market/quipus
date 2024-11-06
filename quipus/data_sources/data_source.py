@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from typing import Union
+
 import polars as pl
 
 

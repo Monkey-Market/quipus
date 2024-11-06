@@ -1,10 +1,10 @@
 from typing import Optional, override
-from psycopg_pool import ConnectionPool
-
-from quipus.utils import DBConfig
-from quipus.data_sources import DataBaseSource
 
 import polars as pl
+from psycopg_pool import ConnectionPool
+
+from quipus.data_sources import DataBaseSource
+from quipus.utils import DBConfig
 
 
 class PostgreSQLSource(DataBaseSource):
@@ -120,7 +120,7 @@ class PostgreSQLSource(DataBaseSource):
 
         except Exception as e:
             self._connected = False
-            raise RuntimeError(f"Error connecting to the database: {e}")
+            raise RuntimeError(f"Error connecting to the database: {e}") from e
 
     def disconnect(self) -> None:
         """
@@ -135,7 +135,7 @@ class PostgreSQLSource(DataBaseSource):
                 self._connected = False
                 print("\nDesconexión exitosa.")
             except Exception as e:
-                raise RuntimeError(f"Error disconnecting from the database: {e}")
+                raise RuntimeError(f"Error disconnecting from the database: {e}") from e
         else:
             raise RuntimeError("No active connection to disconnect.")
 
@@ -160,7 +160,7 @@ class PostgreSQLSource(DataBaseSource):
                 columns = [desc[0] for desc in cursor.description]
                 return self.to_polars_df(result, columns)
         except Exception as e:
-            raise RuntimeError(f"Error loading data: {e}")
+            raise RuntimeError(f"Error loading data: {e}") from e
 
     @override
     def get_columns(self, table_name: str, *args, **kwargs) -> list[str]:
@@ -190,4 +190,4 @@ class PostgreSQLSource(DataBaseSource):
                 columns = cursor.fetchall()
                 return [col[0] for col in columns]
         except Exception as e:
-            raise RuntimeError(f"Error retrieving columns: {e}")
+            raise RuntimeError(f"Error retrieving columns: {e}") from e

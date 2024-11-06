@@ -1,10 +1,10 @@
 from typing import Optional, override
-from mysql.connector import pooling, Error
-
-from quipus.utils import DBConfig
-from quipus.data_sources import DataBaseSource
 
 import polars as pl
+from mysql.connector import Error, pooling
+
+from quipus.data_sources import DataBaseSource
+from quipus.utils import DBConfig
 
 
 class MySQLSource(DataBaseSource):
@@ -118,7 +118,7 @@ class MySQLSource(DataBaseSource):
                 self._connection = self._connection_pool.get_connection()
                 self.connected = True
             except Error as e:
-                raise ConnectionError(f"Error connecting to the database: {e}")
+                raise ConnectionError(f"Error connecting to the database: {e}") from e
 
     def disconnect(self):
         """
@@ -134,7 +134,7 @@ class MySQLSource(DataBaseSource):
             self._connection.close()
             self.connected = False
         except Error as e:
-            raise ConnectionError(f"Error disconnecting from the database: {e}")
+            raise ConnectionError(f"Error disconnecting from the database: {e}") from e
 
     def load_data(self) -> pl.DataFrame:
         """
@@ -159,7 +159,7 @@ class MySQLSource(DataBaseSource):
             cursor.close()
             return self.to_polars_df(result, columns)
         except Error as e:
-            raise RuntimeError(f"Error executing query: {e}")
+            raise RuntimeError(f"Error executing query: {e}") from e
 
     @override
     def get_columns(self, table_name: str, *args, **kwargs) -> list[str]:
@@ -187,4 +187,4 @@ class MySQLSource(DataBaseSource):
             cursor.close()
             return columns
         except Error as e:
-            raise RuntimeError(f"Error retrieving columns: {e}")
+            raise RuntimeError(f"Error retrieving columns: {e}") from e

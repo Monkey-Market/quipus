@@ -1,11 +1,11 @@
 from typing import Optional, override
+
+import polars as pl
 from pymongo import MongoClient
 from pymongo.errors import ConnectionFailure
 
-from quipus.utils import DBConfig
 from quipus.data_sources import DataBaseSource
-
-import polars as pl
+from quipus.utils import DBConfig
 
 
 class MongoDBSource(DataBaseSource):
@@ -42,7 +42,7 @@ class MongoDBSource(DataBaseSource):
     def __init__(
         self,
         collection_name: str,
-        query: Optional[dict] = {},
+        query: Optional[dict] = None,
         connection_string: Optional[str] = None,
         db_config: Optional[DBConfig] = None,
         use_srv: Optional[bool] = False,
@@ -144,7 +144,7 @@ class MongoDBSource(DataBaseSource):
             self._database = self._client[self.db_config.database]
 
         except ConnectionFailure as e:
-            raise ConnectionError(f"Failed to connect to MongoDB: {e}")
+            raise ConnectionError(f"Failed to connect to MongoDB: {e}") from e
 
     def connect(self):
         """

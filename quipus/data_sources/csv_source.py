@@ -1,5 +1,6 @@
 from pathlib import Path
 from typing import Optional, Union
+
 import polars as pl
 
 from quipus.data_sources import FileSource
@@ -48,15 +49,15 @@ class CSVSource(FileSource):
         Initializes a CSVSource instance with the specified parameters.
 
         Parameters:
-            file_path (Union[str, Path]): The path to the CSV file.
-            delimiter (str, optional): The character used to separate values. Defaults to ",".
-            quote_char (Optional[str], optional): The character used to quote strings. Defaults to None.
-            skip_rows (int, optional): The number of rows to skip at the start of the file. Defaults to 0.
-            na_values (Optional[list[str]], optional): A list of values to treat as missing/NA. Defaults to None.
-            encoding (Optional[EncodingType], optional): The file encoding. Defaults to "utf-8".
-            has_header (bool, optional): Indicates if the file has a header row. Defaults to True.
-            columns (Optional[list[str]], optional): Columns to read from the file. Defaults to None.
-            date_columns (Optional[list[str]], optional): Columns containing date values. Defaults to None.
+          file_path (Union[str, Path]): The path to the CSV file.
+          delimiter (str, optional): The character used to separate values. Defaults to ",".
+          quote_char (Optional[str], optional): Character used to quote strings. Defaults to None.
+          skip_rows (int, optional): The number of rows to skip at the start of the file. Defaults to 0.
+          na_values (Optional[list[str]], optional): A list of values to treat as missing/NA. Defaults to None.
+          encoding (Optional[EncodingType], optional): The file encoding. Defaults to "utf-8".
+          has_header (bool, optional): Indicates if the file has a header row. Defaults to True.
+          columns (Optional[list[str]], optional): Columns to read from the file. Defaults to None.
+          date_columns (Optional[list[str]], optional): Columns containing date values. Defaults to None.
         """
         super().__init__(
             file_path=file_path,
