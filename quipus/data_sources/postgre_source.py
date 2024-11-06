@@ -1,98 +1,139 @@
+from typing import Optional, override
 from psycopg_pool import ConnectionPool
-from .database_source import DataBaseSource
+
+from quipus.utils import DBConfig
+from quipus.data_sources import DataBaseSource
 
 import polars as pl
 
 
 class PostgreSQLSource(DataBaseSource):
     """
-    Class for managing connections to a PostgreSQL database using psycopg v3 and connection pooling.
+    A class for managing connections and data retrieval from a PostgreSQL database
+    using psycopg v3 with connection pooling.
 
     Attributes:
         connection_string (str): The connection string for the PostgreSQL database.
-        query: The query to execute on the database.
+        query (str): The SQL query to be executed on the database.
+
+    Methods:
+        initialize_pool(min_connections: int, max_connections: int) -> None:
+            Initializes the connection pool for the database.
+
+        connect() -> None:
+            Obtains a connection from the pool and sets the connection status to active.
+
+        disconnect() -> None:
+            Releases the connection back to the pool and marks the status as disconnected.
+
+        load_data() -> pl.DataFrame:
+            Executes the provided SQL query and returns the result as a Polars DataFrame.
+
+        get_columns(table_name: str) -> list[str]:
+            Retrieves the column names for a specified table in the database.
     """
 
-    def __init__(self, connection_string: str, query: str):
-        super().__init__(connection_string)
-        self._connection_pool = None
+    def __init__(
+        self,
+        query: str,
+        connection_string: Optional[str] = None,
+        db_config: Optional[DBConfig] = None,
+    ):
+        """
+        Initializes a PostgreSQLSource instance with a query and optional connection details.
+
+        Parameters:
+            query (str): The SQL query to execute.
+            connection_string (Optional[str], optional): The connection string for the database.
+                Defaults to None, which constructs it from db_config if provided.
+            db_config (Optional[DBConfig], optional): A DBConfig instance for constructing
+                the connection string. Defaults to None.
+        """
+        if db_config and not connection_string:
+            connection_string = (
+                f"postgresql://{db_config.user}:{db_config.password}@"
+                f"{db_config.host}:{db_config.port}/{db_config.database}"
+            )
+        super().__init__(connection_string, db_config)
+        self._connection = None
         self.query = query
 
     @property
     def query(self) -> str:
+        """
+        str: The SQL query to be executed on the database.
+
+        Raises:
+            ValueError: If the query is not a string or is empty.
+        """
         return self._query
 
     @query.setter
     def query(self, value: str) -> None:
+        """
+        Sets the SQL query to be executed.
+
+        Parameters:
+            value (str): The SQL query.
+
+        Raises:
+            ValueError: If the query is not a string or is empty.
+        """
         if not isinstance(value, str):
             raise ValueError("The query must be a string.")
         if value.strip() == "":
             raise ValueError("The query cannot be empty.")
         self._query = value
 
-    @classmethod
-    def build_connection_string(
-        cls, user: str, password: str, host: str, port: int, database: str
-    ) -> str:
-        """
-        Builds a PostgreSQL connection string from the provided parameters.
-
-        Args:
-            user (str): The username for authentication.
-            password (str): The password for authentication.
-            host (str): The hostname or IP address of the database server.
-            port (int): The port number to connect to (default for PostgreSQL is 5432).
-            database (str): The name of the database to connect to.
-
-        Returns:
-            str: The connection string for the PostgreSQL database.
-
-        Example:
-            >>> connection_string = PostgreSQLSource.build_connection_string(
-            ...     user="myuser", password="mypassword", host="localhost", port=5432, database="mydatabase"
-            ... )
-            >>> print(connection_string) # 'postgresql://myuser:mypassword@localhost:5432/mydatabase'
-        """
-        return f"postgresql://{user}:{password}@{host}:{port}/{database}"
-
     def initialize_pool(
         self, min_connections: int = 1, max_connections: int = 10
     ) -> None:
         """
-        Initializes the connection pool for PostgreSQL.
+        Initializes the connection pool for the PostgreSQL database.
 
-        Args:
-            min_connections (int): The minimum number of connections in the pool.
-            max_connections (int): The maximum number of connections in the pool.
+        Parameters:
+            min_connections (int): The minimum number of connections in the pool. Defaults to 1.
+            max_connections (int): The maximum number of connections in the pool. Defaults to 10.
         """
-        try:
-            self._connection_pool = ConnectionPool(
-                conninfo=self.connection_string,
-                min_size=min_connections,
-                max_size=max_connections,
-            )
-            if not self._connection_pool:
-                raise RuntimeError("Failed to create the connection pool.")
-        except Exception as e:
-            raise RuntimeError(f"Error initializing connection pool: {e}")
+        self._connection_pool = ConnectionPool(
+            conninfo=self.connection_string,
+            min_size=min_connections,
+            max_size=max_connections,
+        )
 
     def connect(self) -> None:
-        """Obtains a connection from the pool and sets the connected status to True."""
-        if not self._connection_pool:
-            raise RuntimeError("Connection pool not initialized.")
+        """
+        Obtains a connection from the connection pool and sets the connected status to True.
+
+        Raises:
+            RuntimeError: If an error occurs while trying to connect to the database.
+        """
+        if not hasattr(self, "_connection_pool") or self._connection_pool is None:
+            self.initialize_pool()
+
         try:
-            self._connection = self._connection_pool.getconn()
-            self._connection.autocommit = True
-            self._connected = True
+            if not self._connection:
+                self._connection = self._connection_pool.getconn()
+                self._connection.autocommit = True
+                self._connected = True
+                print("Conexión exitosa.\n")
+
         except Exception as e:
+            self._connected = False
             raise RuntimeError(f"Error connecting to the database: {e}")
 
     def disconnect(self) -> None:
-        """Releases the connection back to the pool and sets the connected status to False."""
+        """
+        Releases the current connection back to the pool and sets the connected status to False.
+
+        Raises:
+            RuntimeError: If an error occurs during disconnection or if no active connection exists.
+        """
         if self._connected and self._connection:
             try:
                 self._connection_pool.putconn(self._connection)
                 self._connected = False
+                print("\nDesconexión exitosa.")
             except Exception as e:
                 raise RuntimeError(f"Error disconnecting from the database: {e}")
         else:
@@ -100,13 +141,14 @@ class PostgreSQLSource(DataBaseSource):
 
     def load_data(self) -> pl.DataFrame:
         """
-        Executes a query to load data from the PostgreSQL database.
+        Executes the configured SQL query and loads data from the PostgreSQL database
+        into a Polars DataFrame.
 
         Returns:
-            Any: The result of the query as a list of tuples.
+            pl.DataFrame: A DataFrame containing the query result.
 
         Raises:
-            RuntimeError: If an error occurs while loading the data.
+            RuntimeError: If not connected to the database or if an error occurs during execution.
         """
         if not self._connected or not self._connection:
             raise RuntimeError("Not connected to the database.")
@@ -120,15 +162,19 @@ class PostgreSQLSource(DataBaseSource):
         except Exception as e:
             raise RuntimeError(f"Error loading data: {e}")
 
-    def get_columns(self, table_name: str) -> list[str]:
+    @override
+    def get_columns(self, table_name: str, *args, **kwargs) -> list[str]:
         """
-        Retrieves the list of columns from a specific table in the PostgreSQL database.
+        Retrieves the list of column names from a specified table in the database.
 
-        Args:
-            table_name (str): The name of the table.
+        Parameters:
+            table_name (str): The name of the table to retrieve column names from.
 
         Returns:
-            list[str]: A list of column names.
+            list[str]: A list of column names from the table.
+
+        Raises:
+            RuntimeError: If not connected to the database or if an error occurs during retrieval.
         """
         if not self._connected or not self._connection:
             raise RuntimeError("Not connected to the database.")
