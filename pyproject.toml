@@ -29,7 +29,26 @@ mysql-connector-python = "^9.1.0"
 pylint = "^3.3.1"
 black = "^24.10.0"
 pytest = "^8.3.3"
+ruff = "^0.7.2"
 
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.ruff]
+fix = false
+
+line-length = 200
+
+exclude = ["*/.venv", "build", "dist", "csv_data_source.py"]
+
+lint.select = [
+    "B",  # Errors and bad practices (from flake8-bugbear).
+    "D",  # Docstrings, to check their presence and format.
+    "E",  # Style errors, alignment, and code conventions.
+    "F",  # Code errors (equivalent to flake8, detects critical issues).
+    "I",  # Imports (reordering, duplicates, and conventions).
+    "Q",  # Improper SQL queries (if applicable to your project).
+    "S",  # Security (detects common vulnerabilities).
+]
+

@@ -1,5 +1,5 @@
 [MASTER]
-# Añade directorios a la lista de Python Path, separados por comas.
+# Add your path to the PYTHONPATH
 init-hook='import sys; sys.path.append("YOUR PATH")'
 
 [BASIC]
@@ -17,7 +17,8 @@ disable=
     anomalous-backslash-in-string
 
 [FORMAT]
-max-line-length=88
+max-line-docstring=72 # PEP 8 docstrings
+max-line-length=99 # PEP 8 code width
 indent-string='    '
 ignore-long-lines=^(\s*#.*|\s*print\(.*|\s*https?:\/\/[^\s]+|\s*def .+\(.*\):|\s*if .+:)$
 
