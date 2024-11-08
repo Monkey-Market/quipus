@@ -7,16 +7,6 @@ import polars as pl
 class DataSource(ABC):
     """
     An abstract base class for data sources.
-
-    Methods:
-        load_data() -> pl.DataFrame:
-            Abstract method to load data from the data source.
-
-        get_columns() -> list[str]:
-            Abstract method to get the column names from the data source.
-
-        to_polars_df(data: Union[pl.DataFrame, list[tuple], list[dict]], columns: list[str] = None) -> pl.DataFrame:
-            Converts provided data to a Polars DataFrame.
     """
 
     @abstractmethod
@@ -27,17 +17,15 @@ class DataSource(ABC):
         Returns:
             pl.DataFrame: The loaded data as a Polars DataFrame.
         """
-        pass
 
     @abstractmethod
     def get_columns(self, *args, **kwargs) -> list[str]:
         """
-        Abstract method to be overridden by subclasses to retrieve column names from the data source.
+        Abstract method to be overridden by subclasses to retrieve column names from a data source.
 
         Returns:
             list[str]: A list of column names.
         """
-        pass
 
     def to_polars_df(
         self,
@@ -48,9 +36,10 @@ class DataSource(ABC):
         Converts the provided data into a Polars DataFrame.
 
         Parameters:
-            data (Union[pl.DataFrame, list[tuple], list[dict]]): The data to be converted. Can be a Polars DataFrame,
-                a list of tuples, or a list of dictionaries.
-            columns (list[str], optional): The column names for the DataFrame when data is a list of tuples. Defaults to None.
+            data (Union[pl.DataFrame, list[tuple], list[dict]]): The data to be converted.
+              Can be a Polars DataFrame, a list of tuples, or a list of dictionaries.
+            columns (list[str]): The column names for the DataFrame when data is
+              a list of tuples. Defaults to None.
 
         Returns:
             pl.DataFrame: The converted Polars DataFrame.

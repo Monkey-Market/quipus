@@ -1,7 +1,8 @@
 from typing import Optional
 
-from quipus.data_sources import DataSource
 from quipus.utils import Connectable, DBConfig
+
+from .data_source import DataSource
 
 
 class DataBaseSource(DataSource, Connectable):
@@ -23,9 +24,9 @@ class DataBaseSource(DataSource, Connectable):
         Initializes a DataBaseSource instance.
 
         Parameters:
-            connection_string (Optional[str], optional): The connection string for the database.
+            connection_string (Optional[str]): The connection string for the database.
                 Defaults to None.
-            db_config (Optional[DBConfig], optional): The database connection configuration.
+            db_config (Optional[DBConfig]): The database connection configuration.
                 Defaults to None.
 
         Raises:

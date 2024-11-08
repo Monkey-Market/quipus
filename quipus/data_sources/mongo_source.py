@@ -4,8 +4,9 @@ import polars as pl
 from pymongo import MongoClient
 from pymongo.errors import ConnectionFailure
 
-from quipus.data_sources import DataBaseSource
 from quipus.utils import DBConfig
+
+from .database_source import DataBaseSource
 
 
 class MongoDBSource(DataBaseSource):
@@ -18,25 +19,6 @@ class MongoDBSource(DataBaseSource):
           database.
         collection_name (str): The name of the collection to query.
         query (dict): The query to be executed on the collection.
-
-    Methods:
-        initialize_pool(min_connections: int, max_connections: int) -> None:
-            Initializes the MongoDB client and sets up connection pooling.
-
-        connect() -> None:
-            Establishes a connection to the MongoDB database and sets the connected status.
-
-        disconnect() -> None:
-            Closes the MongoDB connection and sets the connection status to disconnected.
-
-        load_data() -> pl.DataFrame:
-            Loads data from the MongoDB collection and returns it as a Polars DataFrame.
-
-        get_columns(table_name: str) -> list[str]:
-            Retrieves a list of fields from the first document in the specified collection.
-
-        _build_connection_string(db_config: DBConfig, use_srv: bool) -> str:
-            Builds a MongoDB connection string based on the given configuration.
     """
 
     def __init__(
@@ -52,12 +34,13 @@ class MongoDBSource(DataBaseSource):
 
         Parameters:
             collection_name (str): The name of the collection to query.
-            query (Optional[dict], optional): The MongoDB query to execute. Defaults to an empty dictionary.
-            connection_string (Optional[str], optional): The connection string for the database.
+            query (Optional[dict]): The MongoDB query to execute. Defaults to an empty dictionary.
+            connection_string (Optional[str]): The connection string for the database.
                 Defaults to None, which constructs it from db_config if provided.
-            db_config (Optional[DBConfig], optional): A DBConfig instance for constructing the connection string.
-                Defaults to None.
-            use_srv (Optional[bool], optional): Whether to use the '+srv' scheme for MongoDB. Defaults to False.
+            db_config (Optional[DBConfig]): A DBConfig instance for constructing
+              the connection string. Defaults to None.
+            use_srv (Optional[bool]): Whether to use the '+srv' scheme for MongoDB.
+              Defaults to False.
 
         Raises:
             ValueError: If the collection_name is empty or invalid.
@@ -70,6 +53,7 @@ class MongoDBSource(DataBaseSource):
         self.query = query
         self._client = None
         self._database = None
+        self._connected = False
 
     @property
     def query(self) -> dict:
@@ -125,7 +109,7 @@ class MongoDBSource(DataBaseSource):
         """
         Initializes the connection pool for MongoDB by creating a MongoClient instance.
 
-        MongoDB handles connection pooling automatically, so this method mainly initializes the client.
+        MongoDB handles connection pooling automatically, this method only initializes the client.
 
         Parameters:
             min_connections (int): The minimum number of connections in the pool. Defaults to 1.
@@ -199,7 +183,7 @@ class MongoDBSource(DataBaseSource):
         return self.to_polars_df(result) if result else pl.DataFrame()
 
     @override
-    def get_columns(self, table_name: str, *args, **kwargs) -> list[str]:
+    def get_columns(self, *args, **kwargs) -> list[str]:
         """
         Retrieves the list of fields from the first document in the specified MongoDB collection.
 
@@ -212,9 +196,14 @@ class MongoDBSource(DataBaseSource):
         Raises:
             ConnectionError: If not connected to the database.
             ValueError: If the collection is empty or does not exist.
+            ValueError: If the table_name is not provided.
         """
         if not self._connected or self._database is None:
             raise ConnectionError("Not connected to the MongoDB database.")
+
+        table_name = args[0] if args else kwargs.get("table_name")
+        if not table_name:
+            raise ValueError("Table name must be provided.")
 
         collection = self._database[table_name]
         document = collection.find_one()
@@ -237,6 +226,12 @@ class MongoDBSource(DataBaseSource):
         """
         scheme = "mongodb+srv" if use_srv else "mongodb"
         if use_srv:
-            return f"{scheme}://{db_config.user}:{db_config.password}@{db_config.host}/{db_config.database}"
-        else:
-            return f"{scheme}://{db_config.user}:{db_config.password}@{db_config.host}:{db_config.port}/{db_config.database}"
+            return (
+                f"{scheme}://{db_config.user}:{db_config.password}@"
+                f"{db_config.host}/{db_config.database}"
+            )
+
+        return (
+            f"{scheme}://{db_config.user}:{db_config.password}@"
+            f"{db_config.host}:{db_config.port}/{db_config.database}"
+        )

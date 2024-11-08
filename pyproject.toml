@@ -44,7 +44,7 @@ exclude = ["*/.venv", "build", "dist", "csv_data_source.py"]
 
 lint.select = [
     "B",  # Errors and bad practices (from flake8-bugbear).
-    "D",  # Docstrings, to check their presence and format.
+    # "D",  # Docstrings, to check their presence and format.
     "E",  # Style errors, alignment, and code conventions.
     "F",  # Code errors (equivalent to flake8, detects critical issues).
     "I",  # Imports (reordering, duplicates, and conventions).

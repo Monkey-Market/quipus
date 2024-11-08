@@ -11,16 +11,6 @@ class Connectable(ABC):
 
     Attributes:
         connection_string (str): The connection string used for establishing a connection.
-
-    Methods:
-        connect() -> None:
-            Establishes a connection to the target resource.
-
-        disconnect() -> None:
-            Terminates the connection to the target resource.
-
-        initialize_pool(min_connections: int, max_connections: int) -> None:
-            Initializes a connection pool with a defined minimum and maximum number of connections.
     """
 
     def __init__(
@@ -91,7 +81,6 @@ class Connectable(ABC):
 
         This method must be implemented by any subclass.
         """
-        pass
 
     @abstractmethod
     def disconnect(self) -> None:
@@ -100,7 +89,6 @@ class Connectable(ABC):
 
         This method must be implemented by any subclass.
         """
-        pass
 
     @abstractmethod
     def initialize_pool(self, min_connections: int, max_connections: int) -> None:
@@ -113,4 +101,3 @@ class Connectable(ABC):
 
         This method must be implemented by any subclass.
         """
-        pass

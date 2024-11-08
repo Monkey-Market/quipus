@@ -1,8 +1,9 @@
 from pathlib import Path
 from typing import Any, Optional, Union
 
-from quipus.data_sources import DataSource
 from quipus.utils import EncodingType
+
+from .data_source import DataSource
 
 
 class FileSource(DataSource):
@@ -32,13 +33,13 @@ class FileSource(DataSource):
 
         Parameters:
             file_path (Union[str, Path]): The path to the file.
-            encoding (Optional[EncodingType], optional): The encoding used for reading the file.
+            encoding (Optional[EncodingType]): The encoding used for reading the file.
                 Defaults to "utf-8".
-            has_header (bool, optional): Indicates if the file has a header row. Defaults to True.
-            columns (Optional[list[str]], optional): List of specific columns to read. Defaults to None.
-            read_options (Optional[dict[str, Any]], optional): Additional options for reading the file.
+            has_header (bool): Indicates if the file has a header row. Defaults to True.
+            columns (Optional[list[str]]): List of specific columns to read. Defaults to None.
+            read_options (Optional[dict[str, Any]]): Additional options for reading the file.
                 Defaults to an empty dictionary.
-            date_columns (Optional[list[str]], optional): List of columns containing date values.
+            date_columns (Optional[list[str]]): List of columns containing date values.
                 Defaults to None.
         """
         self.file_path = Path(file_path)

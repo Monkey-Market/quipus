@@ -13,4 +13,10 @@ class EncodingType(Enum):
 
     @classmethod
     def values(cls) -> list[str]:
+        """
+        Returns a list of all the values in the EncodingType enum.
+
+        Returns:
+            list[str]: List of all the values in the EncodingType enum.
+        """
         return [item.value for item in cls]

@@ -17,7 +17,6 @@ disable=
     anomalous-backslash-in-string
 
 [FORMAT]
-max-line-docstring=72 # PEP 8 docstrings
 max-line-length=99 # PEP 8 code width
 indent-string='    '
 ignore-long-lines=^(\s*#.*|\s*print\(.*|\s*https?:\/\/[^\s]+|\s*def .+\(.*\):|\s*if .+:)$

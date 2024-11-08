@@ -1,9 +1,11 @@
+# pylint: disable=unreachable
+
 from pathlib import Path
 from typing import Any, Optional, Union
 
 import polars as pl
 
-from quipus.data_sources import FileSource
+from .file_source import FileSource
 
 
 class XLSXSource(FileSource):
@@ -20,13 +22,6 @@ class XLSXSource(FileSource):
         columns (Optional[list[str]]): Specific columns to read from the Excel sheet.
         read_options (Optional[dict[str, Any]]): Additional options for reading the file.
         date_columns (Optional[list[str]]): Columns that should be parsed as dates.
-
-    Methods:
-        load_data() -> pl.DataFrame:
-            Loads data from the specified Excel sheet into a Polars DataFrame.
-
-        get_columns() -> list[str]:
-            Retrieves the column names from the specified sheet in the Excel file.
     """
 
     def __init__(
@@ -43,13 +38,13 @@ class XLSXSource(FileSource):
 
         Parameters:
             file_path (Union[str, Path]): The path to the Excel file.
-            sheet (Optional[Union[str, int]], optional): The sheet to read. Can be a sheet name or index.
+            sheet (Optional[Union[str, int]]): The sheet to read. Can be a sheet name or index.
                 Defaults to the first sheet (0).
-            has_header (bool, optional): Specifies if the sheet has a header row. Defaults to True.
-            columns (Optional[list[str]], optional): Columns to be read from the sheet. Defaults to None.
-            read_options (Optional[dict[str, Any]], optional): Additional options for reading the file.
+            has_header (bool): Specifies if the sheet has a header row. Defaults to True.
+            columns (Optional[list[str]]): Columns to be read from the sheet. Defaults to None.
+            read_options (Optional[dict[str, Any]]): Additional options for reading the file.
                 Defaults to None.
-            date_columns (list[str], optional): Columns to parse as dates. Defaults to None.
+            date_columns (list[str]): Columns to parse as dates. Defaults to None.
         """
         super().__init__(
             file_path=file_path,
@@ -148,7 +143,7 @@ class XLSXSource(FileSource):
         Returns:
             list[str]: A list of column names from the specified sheet.
         """
-        result = pl.read_excel(
+        result: pl.DataFrame = pl.read_excel(
             source=self.file_path,
             sheet_name=self.sheet if isinstance(self.sheet, str) else None,
             sheet_id=self.sheet if isinstance(self.sheet, int) else None,
@@ -157,6 +152,4 @@ class XLSXSource(FileSource):
             read_options={"n_rows": 0},
         )
 
-        df = self._select_sheet(result)
-
-        return df.columns
+        return self._select_sheet(result).columns

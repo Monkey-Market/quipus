@@ -3,8 +3,9 @@ from typing import Optional, override
 import polars as pl
 from mysql.connector import Error, pooling
 
-from quipus.data_sources import DataBaseSource
 from quipus.utils import DBConfig
+
+from .database_source import DataBaseSource
 
 
 class MySQLSource(DataBaseSource):
@@ -14,22 +15,6 @@ class MySQLSource(DataBaseSource):
 
     Attributes:
         query (str): The SQL query to be executed on the database.
-
-    Methods:
-        initialize_pool(min_connections: int, max_connections: int) -> None:
-            Initializes the connection pool for the MySQL database.
-
-        connect() -> None:
-            Establishes a connection from the pool and marks the connection as active.
-
-        disconnect() -> None:
-            Closes the active connection and sets the connection status to inactive.
-
-        load_data() -> pl.DataFrame:
-            Executes the configured SQL query and loads the data into a Polars DataFrame.
-
-        get_columns(table_name: str) -> list[str]:
-            Retrieves column names from a specific table in the MySQL database.
     """
 
     def __init__(
@@ -43,9 +28,9 @@ class MySQLSource(DataBaseSource):
 
         Parameters:
             query (str): The SQL query to execute.
-            connection_string (Optional[str], optional): The connection string for the database.
+            connection_string (Optional[str]): The connection string for the database.
                 Defaults to None, which constructs it from db_config if provided.
-            db_config (Optional[DBConfig], optional): A DBConfig instance for constructing
+            db_config (Optional[DBConfig]): A DBConfig instance for constructing
                 the connection string. Defaults to None.
 
         Raises:
@@ -125,7 +110,8 @@ class MySQLSource(DataBaseSource):
         Closes the current connection and sets the connected status to False.
 
         Raises:
-            ConnectionError: If there is no active connection or an error occurs during disconnection.
+            ConnectionError: If there is no active connection or an error occurs
+              during disconnection.
         """
         if not self._connection:
             raise ConnectionError("No active connection to disconnect.")
@@ -162,7 +148,7 @@ class MySQLSource(DataBaseSource):
             raise RuntimeError(f"Error executing query: {e}") from e
 
     @override
-    def get_columns(self, table_name: str, *args, **kwargs) -> list[str]:
+    def get_columns(self, *args, **kwargs) -> list[str]:
         """
         Retrieves the list of columns from a specified table in the MySQL database.
 
@@ -178,6 +164,10 @@ class MySQLSource(DataBaseSource):
         """
         if not self._connected or not self._connection:
             raise ConnectionError("Not connected to the MySQL database.")
+
+        table_name = args[0] if args else kwargs.get("table_name")
+        if not table_name:
+            raise ValueError("Table name must be provided.")
 
         query = f"SHOW COLUMNS FROM {table_name}"
         try:

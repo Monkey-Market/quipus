@@ -3,7 +3,7 @@ from typing import Any, Optional, Union
 
 import polars as pl
 
-from quipus.data_sources import FileSource
+from .file_source import FileSource
 
 
 class ParquetSource(FileSource):
@@ -17,13 +17,6 @@ class ParquetSource(FileSource):
         file_path (Union[str, Path]): The path to the Parquet file.
         columns (Optional[list[str]]): Specific columns to read from the file.
         read_options (Optional[dict[str, Any]]): Additional options for reading the file.
-
-    Methods:
-        load_data() -> pl.DataFrame:
-            Loads data from the Parquet file into a Polars DataFrame.
-
-        get_columns() -> list[str]:
-            Retrieves the list of columns from the Parquet file.
     """
 
     def __init__(
@@ -37,9 +30,9 @@ class ParquetSource(FileSource):
 
         Parameters:
             file_path (Union[str, Path]): The path to the Parquet file.
-            columns (Optional[list[str]], optional): Columns to be read from the file.
+            columns (Optional[list[str]]): Columns to be read from the file.
                 Defaults to None, which reads all columns.
-            read_options (Optional[dict[str, Any]], optional): Additional options for reading
+            read_options (Optional[dict[str, Any]]): Additional options for reading
                 the file, passed directly to the Polars reader. Defaults to None.
         """
         super().__init__(

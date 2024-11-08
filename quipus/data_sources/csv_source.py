@@ -3,16 +3,14 @@ from typing import Optional, Union
 
 import polars as pl
 
-from quipus.data_sources import FileSource
 from quipus.utils import EncodingType
+
+from .file_source import FileSource
 
 
 class CSVSource(FileSource):
     """
     A class for loading and processing data from CSV files.
-
-    Inherits from:
-        FileSource: Base class for handling file sources.
 
     Attributes:
         file_path (Union[str, Path]): The path to the CSV file.
@@ -24,13 +22,6 @@ class CSVSource(FileSource):
         has_header (bool): Indicates if the CSV file has a header row.
         columns (Optional[list[str]]): A list of columns to read from the file.
         date_columns (Optional[list[str]]): A list of column names that contain date values.
-
-    Methods:
-        load_data() -> pl.DataFrame:
-            Loads data from the CSV file into a Polars DataFrame.
-
-        get_columns() -> list[str]:
-            Retrieves the list of columns from the CSV file.
     """
 
     def __init__(
@@ -50,14 +41,14 @@ class CSVSource(FileSource):
 
         Parameters:
           file_path (Union[str, Path]): The path to the CSV file.
-          delimiter (str, optional): The character used to separate values. Defaults to ",".
-          quote_char (Optional[str], optional): Character used to quote strings. Defaults to None.
-          skip_rows (int, optional): The number of rows to skip at the start of the file. Defaults to 0.
-          na_values (Optional[list[str]], optional): A list of values to treat as missing/NA. Defaults to None.
-          encoding (Optional[EncodingType], optional): The file encoding. Defaults to "utf-8".
-          has_header (bool, optional): Indicates if the file has a header row. Defaults to True.
-          columns (Optional[list[str]], optional): Columns to read from the file. Defaults to None.
-          date_columns (Optional[list[str]], optional): Columns containing date values. Defaults to None.
+          delimiter (str): The character used to separate values. Defaults to ",".
+          quote_char (Optional[str]): Character used to quote strings. Defaults to None.
+          skip_rows (int): The number of rows to skip at the start of the file. Defaults to 0.
+          na_values (Optional[list[str]]): A list of values to treat as missing. Defaults to None.
+          encoding (Optional[EncodingType]): The file encoding. Defaults to "utf-8".
+          has_header (bool): Indicates if the file has a header row. Defaults to True.
+          columns (Optional[list[str]]): Columns to read from the file. Defaults to None.
+          date_columns (Optional[list[str]]): Columns containing date values. Defaults to None.
         """
         super().__init__(
             file_path=file_path,
@@ -102,8 +93,8 @@ class CSVSource(FileSource):
         Optional[str]: The character used to quote strings in the CSV file.
 
         Raises:
-            ValueError: If the quote character is the same as the delimiter or not a single character.
-            TypeError: If the quote character is not a string.
+            ValueError: If `quote_char` is the same as the delimiter or not a single character.
+            TypeError: If `quote_char` is not a string.
         """
         return self._quote_char
 
@@ -116,8 +107,8 @@ class CSVSource(FileSource):
             value (Optional[str]): The quote character.
 
         Raises:
-            ValueError: If the quote character is the same as the delimiter or not a single character.
-            TypeError: If the quote character is not a string.
+            ValueError: If the `quote_char` is the same as the delimiter or not a single character.
+            TypeError: If the `quote_char` is not a string.
         """
         if not isinstance(value, str):
             raise TypeError("Quote character must be a string.")

@@ -3,8 +3,9 @@ from typing import Optional, override
 import polars as pl
 from psycopg_pool import ConnectionPool
 
-from quipus.data_sources import DataBaseSource
 from quipus.utils import DBConfig
+
+from .database_source import DataBaseSource
 
 
 class PostgreSQLSource(DataBaseSource):
@@ -15,22 +16,6 @@ class PostgreSQLSource(DataBaseSource):
     Attributes:
         connection_string (str): The connection string for the PostgreSQL database.
         query (str): The SQL query to be executed on the database.
-
-    Methods:
-        initialize_pool(min_connections: int, max_connections: int) -> None:
-            Initializes the connection pool for the database.
-
-        connect() -> None:
-            Obtains a connection from the pool and sets the connection status to active.
-
-        disconnect() -> None:
-            Releases the connection back to the pool and marks the status as disconnected.
-
-        load_data() -> pl.DataFrame:
-            Executes the provided SQL query and returns the result as a Polars DataFrame.
-
-        get_columns(table_name: str) -> list[str]:
-            Retrieves the column names for a specified table in the database.
     """
 
     def __init__(
@@ -44,9 +29,9 @@ class PostgreSQLSource(DataBaseSource):
 
         Parameters:
             query (str): The SQL query to execute.
-            connection_string (Optional[str], optional): The connection string for the database.
+            connection_string (Optional[str]): The connection string for the database.
                 Defaults to None, which constructs it from db_config if provided.
-            db_config (Optional[DBConfig], optional): A DBConfig instance for constructing
+            db_config (Optional[DBConfig]): A DBConfig instance for constructing
                 the connection string. Defaults to None.
         """
         if db_config and not connection_string:
@@ -57,6 +42,7 @@ class PostgreSQLSource(DataBaseSource):
         super().__init__(connection_string, db_config)
         self._connection = None
         self.query = query
+        self._connected = False
 
     @property
     def query(self) -> str:
@@ -127,7 +113,7 @@ class PostgreSQLSource(DataBaseSource):
         Releases the current connection back to the pool and sets the connected status to False.
 
         Raises:
-            RuntimeError: If an error occurs during disconnection or if no active connection exists.
+            RuntimeError: If an error occurs during disconnection or no active connection exists.
         """
         if self._connected and self._connection:
             try:
@@ -163,7 +149,7 @@ class PostgreSQLSource(DataBaseSource):
             raise RuntimeError(f"Error loading data: {e}") from e
 
     @override
-    def get_columns(self, table_name: str, *args, **kwargs) -> list[str]:
+    def get_columns(self, *args, **kwargs) -> list[str]:
         """
         Retrieves the list of column names from a specified table in the database.
 
@@ -178,6 +164,10 @@ class PostgreSQLSource(DataBaseSource):
         """
         if not self._connected or not self._connection:
             raise RuntimeError("Not connected to the database.")
+
+        table_name = args[0] if args else kwargs.get("table_name")
+        if not table_name:
+            raise ValueError("Table name must be provided.")
 
         query = """
         SELECT column_name
