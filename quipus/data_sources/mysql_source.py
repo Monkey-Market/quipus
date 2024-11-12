@@ -71,6 +71,7 @@ class MySQLSource(DataBaseSource):
             raise ValueError("The query must be a non-empty string.")
         self._query = value
 
+    @override
     def initialize_pool(self, min_connections: int = 1, max_connections: int = 10):
         """
         Initializes the connection pool for MySQL.
@@ -89,6 +90,7 @@ class MySQLSource(DataBaseSource):
             database=self.db_config.database,
         )
 
+    @override
     def connect(self) -> None:
         """
         Obtains a connection from the connection pool and sets the connected status to True.
@@ -106,6 +108,7 @@ class MySQLSource(DataBaseSource):
             except Error as e:
                 raise ConnectionError(f"Error connecting to the database: {e}") from e
 
+    @override
     def disconnect(self):
         """
         Closes the current connection and sets the connected status to False.
@@ -123,6 +126,7 @@ class MySQLSource(DataBaseSource):
         except Error as e:
             raise ConnectionError(f"Error disconnecting from the database: {e}") from e
 
+    @override
     def load_data(self) -> pl.DataFrame:
         """
         Executes the configured SQL query and loads the data from the MySQL database

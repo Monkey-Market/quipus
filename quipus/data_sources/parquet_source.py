@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Any, Optional, Union
+from typing import Any, Optional, Union, override
 
 import polars as pl
 
@@ -41,6 +41,7 @@ class ParquetSource(FileSource):
             read_options=read_options,
         )
 
+    @override
     def load_data(self) -> pl.DataFrame:
         """
         Loads data from the Parquet file into a Polars DataFrame.
@@ -55,6 +56,7 @@ class ParquetSource(FileSource):
             source=self.file_path, columns=self.columns, **self.read_options
         )
 
+    @override
     def get_columns(self, *args, **kwargs) -> list[str]:
         """
         Retrieves the list of columns from the Parquet file.

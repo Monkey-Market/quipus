@@ -105,6 +105,7 @@ class MongoDBSource(DataBaseSource):
             raise ValueError("The collection name must be a non-empty string.")
         self._collection_name = value
 
+    @override
     def initialize_pool(self, min_connections: int = 1, max_connections: int = 10):
         """
         Initializes the connection pool for MongoDB by creating a MongoClient instance.
@@ -130,6 +131,7 @@ class MongoDBSource(DataBaseSource):
         except ConnectionFailure as e:
             raise ConnectionError(f"Failed to connect to MongoDB: {e}") from e
 
+    @override
     def connect(self):
         """
         Establishes a connection to the MongoDB database and sets the connected status.
@@ -150,6 +152,7 @@ class MongoDBSource(DataBaseSource):
             self.connected = False
             raise ConnectionError("Failed to connect to the MongoDB database.") from e
 
+    @override
     def disconnect(self):
         """
         Closes the MongoDB client connection and sets the connection status to False.
@@ -162,6 +165,7 @@ class MongoDBSource(DataBaseSource):
         self._client.close()
         self.connected = False
 
+    @override
     def load_data(self) -> pl.DataFrame:
         """
         Loads data from the specified MongoDB collection based on the query.

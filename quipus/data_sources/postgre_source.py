@@ -71,6 +71,7 @@ class PostgreSQLSource(DataBaseSource):
             raise ValueError("The query cannot be empty.")
         self._query = value
 
+    @override
     def initialize_pool(
         self, min_connections: int = 1, max_connections: int = 10
     ) -> None:
@@ -87,6 +88,7 @@ class PostgreSQLSource(DataBaseSource):
             max_size=max_connections,
         )
 
+    @override
     def connect(self) -> None:
         """
         Obtains a connection from the connection pool and sets the connected status to True.
@@ -108,6 +110,7 @@ class PostgreSQLSource(DataBaseSource):
             self.connected = False
             raise RuntimeError(f"Error connecting to the database: {e}") from e
 
+    @override
     def disconnect(self) -> None:
         """
         Releases the current connection back to the pool and sets the connected status to False.
@@ -125,6 +128,7 @@ class PostgreSQLSource(DataBaseSource):
         else:
             raise RuntimeError("No active connection to disconnect.")
 
+    @override
     def load_data(self) -> pl.DataFrame:
         """
         Executes the configured SQL query and loads data from the PostgreSQL database

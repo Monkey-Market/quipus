@@ -1,7 +1,7 @@
 # pylint: disable=unreachable
 
 from pathlib import Path
-from typing import Any, Optional, Union
+from typing import Any, Optional, Union, override
 
 import polars as pl
 
@@ -80,6 +80,7 @@ class XLSXSource(FileSource):
             raise TypeError("Sheet name must be a string or an integer.")
         self._sheet = value
 
+    @override
     def load_data(self) -> pl.DataFrame:
         """
         Loads data from the Excel file into a Polars DataFrame.
@@ -136,6 +137,7 @@ class XLSXSource(FileSource):
         # Excel sheet not specified, returning first
         return result[sheet_names[0]]
 
+    @override
     def get_columns(self, *args, **kwargs) -> list[str]:
         """
         Retrieves the column names from the Excel file.

@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Optional, Union
+from typing import Optional, Union, override
 
 import polars as pl
 
@@ -176,6 +176,7 @@ class CSVSource(FileSource):
 
         self._na_values = value
 
+    @override
     def load_data(self) -> pl.DataFrame:
         """
         Loads data from the CSV file into a Polars DataFrame.
@@ -194,6 +195,7 @@ class CSVSource(FileSource):
             null_values=self.na_values,
         )
 
+    @override
     def get_columns(self, *args, **kwargs) -> list[str]:
         """
         Retrieves the list of columns from the CSV file.
