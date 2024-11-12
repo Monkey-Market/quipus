@@ -1,51 +1,75 @@
 """
 The root module of the library provides a unified API for accessing the main 
-components of the library. It includes functionalities for loading data from 
-various sources, managing documents (such as invoices), and delivering 
-files or documents through email, SFTP, or S3.
+components and functionalities of the library. It includes tools for loading data 
+from various sources, managing document templates, and delivering documents 
+through different services such as email, SFTP, or Amazon S3.
 
-Classes:
-    CSVDataSource: Loads data from CSV files.
-    DataFrameDataSource: Loads data from polars DataFrames.
-    PostgreSQLDataSource: Loads data from PostgreSQL databases.
-    XLSXDataSource: Loads data from XLSX files.
-    Template: Manages HTML templates with associated CSS and assets.
-    EmailMessageBuilder: Helps in constructing email messages.
-    EmailSender: Sends emails via an SMTP server.
-    S3Delivery: Uploads files to Amazon S3.
-    SFTPDelivery: Transfers files via SFTP.
-    SMTPConfig: Configures the SMTP server for sending emails.
-    TemplateManager: Manages document templates and integrates them with data sources.
+Classes and Components:
+    AWSConfig: Configuration class for AWS services.
+    Connectable: Abstract base class for connectable data sources.
+    CSVSource: Class for loading data from CSV files.
+    DataBaseSource: Abstract base class for database sources.
+    DBConfig: Configuration class for database connections.
+    EmailMessageBuilder: Helper class for constructing email messages.
+    EmailSender: Class for sending emails via an SMTP server.
+    EncodingType: Enum for file encoding types.
+    FileSource: Abstract base class for file-based data sources.
+    MongoDBSource: Class for connecting to and loading data from MongoDB databases.
+    MySQLSource: Class for connecting to and loading data from MySQL databases.
+    ParquetSource: Class for loading data from Parquet files.
+    PostgreSQLSource: Class for connecting to and loading data from PostgreSQL databases.
+    S3Delivery: Class for uploading files to Amazon S3.
+    SFTPDelivery: Class for transferring files via SFTP.
+    SMTPConfig: Configuration class for SMTP server settings.
+    Template: Class for managing HTML templates with associated assets and CSS.
+    TemplateManager: Class for managing and integrating document templates with data sources.
+    XLSXSource: Class for loading data from XLSX files.
 """
 
 from .data_sources import (
     CSVDataSource,
-    DataFrameDataSource,
-    PostgreSQLDataSource,
-    XLSXDataSource,
+    CSVSource,
+    DataBaseSource,
+    DataSource,
+    FileSource,
+    MongoDBSource,
+    MySQLSource,
+    ParquetSource,
+    PostgreSQLSource,
+    XLSXSource,
 )
 from .models import Template
 from .services import (
+    AWSConfig,
     EmailMessageBuilder,
     EmailSender,
-    AWSConfig,
     S3Delivery,
     SFTPDelivery,
     SMTPConfig,
     TemplateManager,
 )
+from .utils import Connectable, DBConfig, EncodingType
 
 __all__ = [
+    "AWSConfig",
+    "Connectable",
     "CSVDataSource",
-    "DataFrameDataSource",
-    "PostgreSQLDataSource",
-    "XLSXDataSource",
-    "Template",
+    "CSVSource",
+    "DataBaseSource",
+    "DataSource",
+    "DBConfig",
     "EmailMessageBuilder",
     "EmailSender",
-    "AWSConfig",
+    "EncodingType",
+    "FileSource",
+    "MongoDBSource",
+    "MySQLSource",
+    "ParquetSource",
+    "PostgreSQLSource",
     "S3Delivery",
     "SFTPDelivery",
     "SMTPConfig",
+    "Template",
     "TemplateManager",
+    "XLSXSource",
 ]

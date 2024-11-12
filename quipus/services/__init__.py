@@ -16,7 +16,7 @@ Classes:
 
 from .s3_delivery import AWSConfig, S3Delivery
 from .sftp_delivery import SFTPDelivery
-from .smtp_delivery import SMTPConfig, EmailMessageBuilder, EmailSender
+from .smtp_delivery import EmailMessageBuilder, EmailSender, SMTPConfig
 from .template_manager import TemplateManager
 
 __all__ = [
