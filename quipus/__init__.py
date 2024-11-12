@@ -48,7 +48,7 @@ from .services import (
     SMTPConfig,
     TemplateManager,
 )
-from .utils import Connectable, DBConfig, EncodingType
+from .utils import Connectable, DBConfig, EncodingType, OutputType, craft, CraftConfig
 
 __all__ = [
     "AWSConfig",
@@ -72,4 +72,7 @@ __all__ = [
     "Template",
     "TemplateManager",
     "XLSXSource",
+    "OutputType",
+    "craft",
+    "CraftConfig",
 ]
