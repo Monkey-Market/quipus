@@ -42,7 +42,7 @@ class PostgreSQLSource(DataBaseSource):
         super().__init__(connection_string, db_config)
         self._connection = None
         self.query = query
-        self._connected = False
+        self.connected = False
 
     @property
     def query(self) -> str:
@@ -101,11 +101,11 @@ class PostgreSQLSource(DataBaseSource):
             if not self._connection:
                 self._connection = self._connection_pool.getconn()
                 self._connection.autocommit = True
-                self._connected = True
+                self.connected = True
                 print("Conexión exitosa.\n")
 
         except Exception as e:
-            self._connected = False
+            self.connected = False
             raise RuntimeError(f"Error connecting to the database: {e}") from e
 
     def disconnect(self) -> None:
@@ -115,10 +115,10 @@ class PostgreSQLSource(DataBaseSource):
         Raises:
             RuntimeError: If an error occurs during disconnection or no active connection exists.
         """
-        if self._connected and self._connection:
+        if self.connected and self._connection:
             try:
                 self._connection_pool.putconn(self._connection)
-                self._connected = False
+                self.connected = False
                 print("\nDesconexión exitosa.")
             except Exception as e:
                 raise RuntimeError(f"Error disconnecting from the database: {e}") from e
@@ -136,7 +136,7 @@ class PostgreSQLSource(DataBaseSource):
         Raises:
             RuntimeError: If not connected to the database or if an error occurs during execution.
         """
-        if not self._connected or not self._connection:
+        if not self.connected or not self._connection:
             raise RuntimeError("Not connected to the database.")
 
         try:
@@ -162,7 +162,7 @@ class PostgreSQLSource(DataBaseSource):
         Raises:
             RuntimeError: If not connected to the database or if an error occurs during retrieval.
         """
-        if not self._connected or not self._connection:
+        if not self.connected or not self._connection:
             raise RuntimeError("Not connected to the database.")
 
         table_name = args[0] if args else kwargs.get("table_name")

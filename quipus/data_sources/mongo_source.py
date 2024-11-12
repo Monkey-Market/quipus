@@ -53,7 +53,7 @@ class MongoDBSource(DataBaseSource):
         self.query = query
         self._client = None
         self._database = None
-        self._connected = False
+        self.connected = False
 
     @property
     def query(self) -> dict:
@@ -145,9 +145,9 @@ class MongoDBSource(DataBaseSource):
 
         try:
             self._client.admin.command("ping")
-            self._connected = True
+            self.connected = True
         except Exception as e:
-            self._connected = False
+            self.connected = False
             raise ConnectionError("Failed to connect to the MongoDB database.") from e
 
     def disconnect(self):
@@ -160,7 +160,7 @@ class MongoDBSource(DataBaseSource):
         if not self._client:
             raise RuntimeError("MongoDB client not initialized.")
         self._client.close()
-        self._connected = False
+        self.connected = False
 
     def load_data(self) -> pl.DataFrame:
         """
@@ -173,7 +173,7 @@ class MongoDBSource(DataBaseSource):
             ConnectionError: If not connected to the database.
             ValueError: If an error occurs during data loading.
         """
-        if not self._connected or self._database is None:
+        if not self.connected or self._database is None:
             raise ConnectionError("Not connected to the MongoDB database.")
 
         collection = self._database[self.collection_name]
@@ -198,7 +198,7 @@ class MongoDBSource(DataBaseSource):
             ValueError: If the collection is empty or does not exist.
             ValueError: If the table_name is not provided.
         """
-        if not self._connected or self._database is None:
+        if not self.connected or self._database is None:
             raise ConnectionError("Not connected to the MongoDB database.")
 
         table_name = args[0] if args else kwargs.get("table_name")

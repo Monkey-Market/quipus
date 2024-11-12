@@ -44,6 +44,7 @@ class MySQLSource(DataBaseSource):
         super().__init__(connection_string, db_config)
         self._connection = None
         self.query = query
+        self.connected = False
 
     @property
     def query(self) -> str:
@@ -134,7 +135,7 @@ class MySQLSource(DataBaseSource):
             ConnectionError: If not connected to the database.
             RuntimeError: If an error occurs during query execution.
         """
-        if not self._connected or not self._connection:
+        if not self.connected or not self._connection:
             raise ConnectionError("Not connected to the MySQL database.")
 
         try:
@@ -162,7 +163,7 @@ class MySQLSource(DataBaseSource):
             ConnectionError: If not connected to the database.
             RuntimeError: If an error occurs during retrieval.
         """
-        if not self._connected or not self._connection:
+        if not self.connected or not self._connection:
             raise ConnectionError("Not connected to the MySQL database.")
 
         table_name = args[0] if args else kwargs.get("table_name")
