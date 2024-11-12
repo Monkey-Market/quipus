@@ -20,3 +20,12 @@ class EncodingType(Enum):
             list[str]: List of all the values in the EncodingType enum.
         """
         return [item.value for item in cls]
+
+
+class OutputType(Enum):
+    HTML = "html"
+    PDF = "pdf"
+    YAML = "yaml"
+    JSON = "json"
+    DOCKER = "docker"
+    TERRAFORM = "terraform"
