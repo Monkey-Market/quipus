@@ -110,6 +110,9 @@ class CSVSource(FileSource):
             ValueError: If the `quote_char` is the same as the delimiter or not a single character.
             TypeError: If the `quote_char` is not a string.
         """
+        if value is None:
+            self._quote_char = value
+            return
         if not isinstance(value, str):
             raise TypeError("Quote character must be a string.")
         if len(value) != 1:
@@ -188,7 +191,7 @@ class CSVSource(FileSource):
             source=self.file_path,
             separator=self.delimiter,
             quote_char=self.quote_char,
-            encoding=self.encoding,
+            encoding=self.encoding.value,
             has_header=self.has_header,
             columns=self.columns,
             skip_rows=self.skip_rows,
@@ -208,7 +211,7 @@ class CSVSource(FileSource):
             n_rows=0,
             separator=self.delimiter,
             quote_char=self.quote_char,
-            encoding=self.encoding,
+            encoding=self.encoding.value,
             has_header=self.has_header,
         )
         return df.columns
