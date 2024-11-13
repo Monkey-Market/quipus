@@ -20,7 +20,6 @@ class MySQLSource(DataBaseSource):
     def __init__(
         self,
         query: str,
-        connection_string: Optional[str] = None,
         db_config: Optional[DBConfig] = None,
     ):
         """
@@ -28,20 +27,13 @@ class MySQLSource(DataBaseSource):
 
         Parameters:
             query (str): The SQL query to execute.
-            connection_string (Optional[str]): The connection string for the database.
-                Defaults to None, which constructs it from db_config if provided.
             db_config (Optional[DBConfig]): A DBConfig instance for constructing
                 the connection string. Defaults to None.
 
         Raises:
             ValueError: If the query is not a valid string.
         """
-        if db_config and not connection_string:
-            connection_string = (
-                f"mysql://{db_config.user}:{db_config.password}@"
-                f"{db_config.host}:{db_config.port}/{db_config.database}"
-            )
-        super().__init__(connection_string, db_config)
+        super().__init__(db_config)
         self._connection = None
         self.query = query
         self.connected = False
