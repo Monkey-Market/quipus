@@ -7,11 +7,10 @@ on:
     types: closed
     paths:
       - quipus/**
-  workflow_dispatch:
 
 jobs:
   ci:
-    # if: github.event.pull_request.merged == true
+    if: github.event.pull_request.merged == true
     runs-on: ubuntu-22.04
     steps:
       - name: Checkout code
