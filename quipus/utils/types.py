@@ -1,4 +1,16 @@
 from enum import Enum
+from typing import TypedDict, Union
+
+ValidReplacementValue = Union[str, int, float, None]
+
+
+class ReplacementsDict(TypedDict, total=False):
+    """
+    TypedDict for template replacements validation.
+    Allows dynamic string keys with values of type str, int, float or None.
+    """
+
+    key: ValidReplacementValue
 
 
 class EncodingType(Enum):

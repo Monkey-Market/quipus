@@ -13,6 +13,8 @@ Classes and Components:
     EmailMessageBuilder: Helper class for constructing email messages.
     EmailSender: Class for sending emails via an SMTP server.
     EncodingType: Enum for file encoding types.
+    ReplacementsDict: TypedDict for template replacements validation.
+    ValidReplacementValue: Union type for valid replacement values.
     FileSource: Abstract base class for file-based data sources.
     MongoDBSource: Class for connecting to and loading data from MongoDB databases.
     MySQLSource: Class for connecting to and loading data from MySQL databases.
@@ -48,7 +50,7 @@ from .services import (
     SMTPConfig,
     TemplateManager,
 )
-from .utils import Connectable, DBConfig, EncodingType
+from .utils import Connectable, DBConfig, EncodingType, ReplacementsDict, ValidReplacementValue
 
 __all__ = [
     "AWSConfig",
@@ -61,6 +63,8 @@ __all__ = [
     "EmailMessageBuilder",
     "EmailSender",
     "EncodingType",
+    "ReplacementsDict",
+    "ValidReplacementValue",
     "FileSource",
     "MongoDBSource",
     "MySQLSource",
