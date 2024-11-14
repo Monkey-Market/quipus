@@ -6,6 +6,8 @@ from email.mime.text import MIMEText
 from email.mime.application import MIMEApplication
 from typing import Literal, Self, Optional
 
+from quipus.utils import ReplacementsDict, ValidReplacementValue
+
 
 class SMTPConfig:
     """
@@ -694,7 +696,7 @@ class EmailMessageBuilder:
         self,
         body_path: str,
         body_type: Literal["plain", "html"] = "plain",
-        replacements: dict = None,
+        replacements: Optional[dict[str, ValidReplacementValue]] = None,
     ) -> Self:
         """
         Set the email body from a file path and replace placeholders.
@@ -702,14 +704,14 @@ class EmailMessageBuilder:
         Args:
             body_path (str): Email body path.
             body_type (Literal["plain", "html"]): Email body type.
-            replacements (dict): Dictionary of replacements for placeholders.
+            replacements (Optional[dict[str, ValidReplacementValue]]): Dictionary of replacements.
 
         Returns:
             Self: EmailMessageBuilder instance.
 
         Raises:
-            TypeError: If 'body_path' is not a string.
-            ValueError: If 'body_path' is an empty string.
+            TypeError: If 'body_path' is not a string or replacements contain invalid types.
+            ValueError: If 'body_path' is empty.
             FileNotFoundError: If the body path does not exist.
         """
         if not isinstance(body_path, str):
@@ -729,7 +731,13 @@ class EmailMessageBuilder:
 
         if replacements:
             for key, value in replacements.items():
-                self.body = self.body.replace(f"{{{key}}}", value)
+                if not isinstance(value, (str, int, float, type(None))):
+                    raise TypeError(
+                        f"Invalid replacement value type for key '{key}': {type(value)}. "
+                        "Only str, int, float or None are allowed."
+                    )
+                str_value = str(value) if value is not None else ''
+                self.body = self.body.replace(f"{{{key}}}", str_value)
 
         self.body_type = body_type
         return self
