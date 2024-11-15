@@ -43,10 +43,17 @@ class MongoDBSource(DataBaseSource):
               Defaults to False.
 
         Raises:
+            ValueError: If neither db_config nor connection_string is provided.
             ValueError: If the collection_name is empty or invalid.
         """
+        if not db_config and not connection_string:
+            raise ValueError("Either db_config or connection_string must be provided.")
+
         if db_config and not connection_string:
             connection_string = self._build_connection_string(db_config, use_srv)
+
+        if not db_config and connection_string:
+            self.db_config.database = connection_string.split("/")[-1]
 
         super().__init__(connection_string=connection_string, db_config=db_config)
         self.collection_name = collection_name
