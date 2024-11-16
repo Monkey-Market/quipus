@@ -39,5 +39,10 @@ class OutputType(Enum):
     PDF = "pdf"
     YAML = "yaml"
     JSON = "json"
-    DOCKER = "docker"
-    TERRAFORM = "terraform"
+    DOCKER = "dockerfile"
+    TERRAFORM = "tf"
+    MARKDOWN = "md"
+    TXT = "txt"
+
+
+BINARY_FILE_TYPES: list[OutputType] = [OutputType.PDF]
