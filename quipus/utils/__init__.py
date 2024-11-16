@@ -20,8 +20,13 @@ Exports:
 
 from .connectable import Connectable
 from .dbconfig import DBConfig
-from .craft import craft, CraftConfig
-from .types import EncodingType, ReplacementsDict, ValidReplacementValue, OutputType
+from .craft import craft_file, CraftConfig
+from .types import (
+    EncodingType,
+    ReplacementsDict,
+    ValidReplacementValue,
+    OutputType,
+)
 
 __all__ = [
     "EncodingType",
@@ -30,6 +35,6 @@ __all__ = [
     "ReplacementsDict",
     "ValidReplacementValue",
     "OutputType",
-    "craft",
+    "craft_file",
     "CraftConfig",
 ]

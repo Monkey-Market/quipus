@@ -55,12 +55,11 @@ from .utils import (
     DBConfig,
     EncodingType,
     OutputType,
-    craft,
+    craft_file,
     CraftConfig,
     ReplacementsDict,
     ValidReplacementValue,
 )
-
 
 __all__ = [
     "AWSConfig",
@@ -87,6 +86,6 @@ __all__ = [
     "TemplateManager",
     "XLSXSource",
     "OutputType",
-    "craft",
+    "craft_file",
     "CraftConfig",
 ]

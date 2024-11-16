@@ -5,7 +5,7 @@ from typing import Any, Callable, Optional, Union
 
 import polars
 
-from quipus.utils.types import EncodingType, OutputType
+from quipus.utils.types import EncodingType, OutputType, BINARY_FILE_TYPES
 
 
 @dataclass
@@ -18,25 +18,11 @@ class CraftConfig:
     decide_filename_with: Callable[[dict[str, Any]], str]
 
 
-def craft(
-    craft_config: CraftConfig,
-    data: polars.DataFrame,
-):
+def craft_file(craft_config: CraftConfig, data: polars.DataFrame):
+    if craft_config.output_type in BINARY_FILE_TYPES:
+        _manage_binary_output(craft_config, data)
+        return
 
-    if not craft_config.output_path and not craft_config.output_dir:
-        raise Exception()
-
-    invoke = {
-        OutputType.HTML: craft_html,
-    }
-
-    invoke[craft_config.output_type](craft_config, data)
-
-
-def craft_html(
-    craft_config: CraftConfig,
-    data: polars.DataFrame,
-):
     for item in data.iter_rows(named=True):
         with open(craft_config.template_path, "r") as file:
             template = file.read()
@@ -52,5 +38,16 @@ def craft_html(
 
             filename = craft_config.decide_filename_with(item)
             output_path = os.path.join(craft_config.output_dir, filename)
-            with open(f"{output_path}.html", "w", encoding="utf-8") as file:
+            with open(
+                f"{output_path}.{craft_config.output_type.value}", "w", encoding="utf-8"
+            ) as file:
                 file.write(rendered)
+
+
+def _manage_binary_output(craft_config: CraftConfig, data: polars.DataFrame):
+    invoke = {OutputType.PDF: craft_pdf}
+    invoke[craft_config.output_type](craft_config, data)
+
+
+def craft_pdf(craft_config: CraftConfig, data: polars.DataFrame):
+    raise NotImplementedError()
