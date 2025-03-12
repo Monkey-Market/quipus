@@ -1,8 +1,10 @@
 import os
 from typing import Any, Callable, Literal, Self
+
 from weasyprint import HTML
-from ..models import Template
+
 from ..data_sources import CSVDataSource
+from ..models import Template
 
 
 class TemplateManager:
@@ -82,7 +84,7 @@ class TemplateManager:
         mapper = {"csv": self.from_csv}
 
         if source_type == "csv":
-            if not "path_to_file" in kwargs:
+            if "path_to_file" not in kwargs:
                 raise KeyError(
                     f"'path_to_file' is required when 'source_type' is {source_type}.",
                 )

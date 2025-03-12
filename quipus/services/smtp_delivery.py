@@ -1,12 +1,12 @@
-from email.mime.base import MIMEBase
 import os
 import smtplib
+from email.mime.application import MIMEApplication
+from email.mime.base import MIMEBase
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-from email.mime.application import MIMEApplication
-from typing import Literal, Self, Optional
+from typing import Literal, Optional, Self
 
-from quipus.utils import ReplacementsDict, ValidReplacementValue
+from quipus.utils import ValidReplacementValue
 
 
 class SMTPConfig:
@@ -736,7 +736,7 @@ class EmailMessageBuilder:
                         f"Invalid replacement value type for key '{key}': {type(value)}. "
                         "Only str, int, float or None are allowed."
                     )
-                str_value = str(value) if value is not None else ''
+                str_value = str(value) if value is not None else ""
                 self.body = self.body.replace(f"{{{key}}}", str_value)
 
         self.body_type = body_type

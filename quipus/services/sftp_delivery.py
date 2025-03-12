@@ -1,8 +1,8 @@
 import hashlib
+from typing import Optional
 
 import paramiko
 from paramiko import SFTPClient
-from typing import Optional
 
 
 class SFTPDelivery:
@@ -275,7 +275,108 @@ class SFTPDelivery:
                 password=self.password,
             )
 
-    def download_file(self, remote_file: str, local_file: str) -> None:
+    def list_files(
+        self, remote_path: str = ".", pattern: str = None, names_only: bool = False
+    ) -> list:
+        """
+        List files in a directory on the SFTP server.
+
+        Args:
+            remote_path (str): Path to the remote directory (default is current directory).
+            pattern (str, optional): Pattern to filter files (e.g., '*.txt'). If None, all files are returned.
+            names_only (bool): If True, only filenames are returned instead of attribute objects.
+
+        Returns:
+            list: List of file attributes or filenames if names_only is True.
+
+        Raises:
+            ValueError: If the SFTP connection is not established.
+            IOError: If the remote directory doesn't exist or cannot be accessed.
+        """
+        if not self.sftp_client:
+            raise ValueError("SFTP connection not established")
+
+        try:
+            all_files = self.sftp_client.listdir_attr(remote_path)
+
+            if pattern:
+                import fnmatch
+
+                all_files = [
+                    file
+                    for file in all_files
+                    if fnmatch.fnmatch(file.filename, pattern)
+                ]
+
+            if names_only:
+                return [file.filename for file in all_files]
+            return all_files
+
+        except IOError as e:
+            raise e
+
+    def list_files_readable(self, remote_path: str = ".", pattern: str = None) -> list:
+        """
+        List files in a directory on the SFTP server with human-readable formatting.
+
+        Args:
+            remote_path (str): Path to the remote directory (default is current directory).
+            pattern (str, optional): Pattern to filter files (e.g., '*.txt'). If None, all files are returned.
+
+        Returns:
+            list: List of dictionaries containing file information in a readable format.
+
+        Raises:
+            ValueError: If the SFTP connection is not established.
+            IOError: If the remote directory doesn't exist or cannot be accessed.
+        """
+        import stat
+        from datetime import datetime
+
+        file_attrs = self.list_files(remote_path, pattern)
+
+        readable_files = []
+        for attr in file_attrs:
+            mode_str = ""
+            mode = attr.st_mode
+            mode_str += "d" if stat.S_ISDIR(mode) else "-"
+            mode_str += "r" if mode & stat.S_IRUSR else "-"
+            mode_str += "w" if mode & stat.S_IWUSR else "-"
+            mode_str += "x" if mode & stat.S_IXUSR else "-"
+            mode_str += "r" if mode & stat.S_IRGRP else "-"
+            mode_str += "w" if mode & stat.S_IWGRP else "-"
+            mode_str += "x" if mode & stat.S_IXGRP else "-"
+            mode_str += "r" if mode & stat.S_IROTH else "-"
+            mode_str += "w" if mode & stat.S_IWOTH else "-"
+            mode_str += "x" if mode & stat.S_IXOTH else "-"
+
+            size = attr.st_size
+            if size < 1024:
+                size_str = f"{size} B"
+            elif size < 1024**2:
+                size_str = f"{size/1024:.1f} KB"
+            elif size < 1024**3:
+                size_str = f"{size/1024**2:.1f} MB"
+            else:
+                size_str = f"{size/1024**3:.1f} GB"
+
+            mtime = datetime.fromtimestamp(attr.st_mtime).strftime("%Y-%m-%d %H:%M:%S")
+
+            readable_files.append(
+                {
+                    "filename": attr.filename,
+                    "size": size_str,
+                    "size_bytes": attr.st_size,
+                    "permissions": mode_str,
+                    "modified": mtime,
+                    "uid": attr.st_uid,
+                    "gid": attr.st_gid,
+                }
+            )
+
+        return readable_files
+
+    def download_file(self, local_file: str, remote_file: str) -> None:
         """
         Download a file from the SFTP server.
 
@@ -325,6 +426,39 @@ class SFTPDelivery:
 
         self.upload_file(local_file, remote_file)
         return self.__verify_upload(local_file, remote_file, algorithm)
+
+    def move_file(self, remote_source: str, remote_destination: str) -> bool:
+        """
+        Move a file on the SFTP server from one location to another.
+
+        This operation is implemented as a rename operation on the remote server.
+
+        Args:
+            remote_source (str): Path to the source file on the server.
+            remote_destination (str): Path to the destination file on the server.
+
+        Returns:
+            bool: True if the move operation was successful, False otherwise.
+
+        Raises:
+            ValueError: If the SFTP connection is not established.
+            IOError: If the source file does not exist or cannot be accessed.
+        """
+
+        if not self.sftp_client:
+            raise ValueError("SFTP connection not established")
+
+        try:
+            self.sftp_client.stat(remote_source)
+            self.sftp_client.rename(remote_source, remote_destination)
+            self.sftp_client.stat(remote_destination)
+            return True
+        except IOError:
+            return False
+        except FileNotFoundError:
+            raise
+        except Exception:
+            raise
 
     def __calculate_checksum(self, file_path: str, algorithm: str = "md5") -> str:
         """

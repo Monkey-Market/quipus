@@ -16,10 +16,7 @@ class CSVDataSource:
     """
 
     def __init__(
-            self,
-            file_path: Union[Path, str],
-            delimiter: str = ",",
-            encoding: str = "utf8"
+        self, file_path: Union[Path, str], delimiter: str = ",", encoding: str = "utf8"
     ):
         self.file_path = file_path
         self.delimiter = delimiter
@@ -32,9 +29,7 @@ class CSVDataSource:
         Load data from the CSV file into a polars DataFrame.
         """
         self.dataframe = pl.read_csv(
-            source=self.file_path,
-            separator=self.delimiter,
-            encoding=self.encoding
+            source=self.file_path, separator=self.delimiter, encoding=self.encoding
         )
 
     @property

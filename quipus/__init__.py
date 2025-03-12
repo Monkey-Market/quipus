@@ -50,7 +50,13 @@ from .services import (
     SMTPConfig,
     TemplateManager,
 )
-from .utils import Connectable, DBConfig, EncodingType, ReplacementsDict, ValidReplacementValue
+from .utils import (
+    Connectable,
+    DBConfig,
+    EncodingType,
+    ReplacementsDict,
+    ValidReplacementValue,
+)
 
 __all__ = [
     "AWSConfig",
