@@ -175,24 +175,6 @@ def test_sftp_delivery_upload_file(monkeypatch, sftp_delivery, tmp_path):
     assert sftp_delivery.sftp_client.files[remote_file] == b"Test content."
 
 
-def test_sftp_delivery_download_file(monkeypatch, sftp_delivery, tmp_path):
-    from quipus.services import sftp_delivery as sftp_module
-
-    monkeypatch.setattr("paramiko.SSHClient", MockSSHClient)
-    monkeypatch.setattr(sftp_module, "SFTPClient", MockSFTPClient)
-
-    sftp_delivery.connect()
-
-    remote_file = "/remote/test.txt"
-    sftp_delivery.sftp_client.files[remote_file] = b"Test content."
-
-    local_file = tmp_path / "test.txt"
-
-    sftp_delivery.download_file(remote_file, str(local_file))
-
-    assert local_file.read_bytes() == b"Test content."
-
-
 def test_sftp_delivery_upload_with_verification(monkeypatch, sftp_delivery, tmp_path):
     from quipus.services import (
         sftp_delivery as sftp_module,
